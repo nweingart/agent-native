@@ -1,4 +1,6 @@
 /* ── agent-native design tokens ────────────────────────────────────── */
+/* Variables live outside @layer so they always apply as defaults       */
+/* and can't be accidentally overridden by unlayered consumer CSS.     */
 
 :root {
   /* ── Surfaces ─────────────────────────────────────────────────────── */
@@ -82,7 +84,8 @@
 
 /* ── Dark mode ─────────────────────────────────────────────────────── */
 
-.an-dark {
+.an-dark,
+.dark {
   --an-surface-0: #1a1b1e;
   --an-surface-1: #25262b;
   --an-surface-2: #2c2e33;
@@ -108,4 +111,8 @@
   --an-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
   --an-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
   --an-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
+
+  --an-glow-running: 0 0 12px rgba(51, 154, 240, 0.5);
+  --an-glow-error: 0 0 12px rgba(255, 107, 107, 0.5);
+  --an-glow-approval: 0 0 12px rgba(204, 93, 232, 0.5);
 }

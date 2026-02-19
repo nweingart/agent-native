@@ -7,6 +7,8 @@ export interface TimelineApprovalGateProps {
   onApprove?: (request: ApprovalRequest) => void;
   onReject?: (request: ApprovalRequest) => void;
   className?: string;
+  approveButtonClassName?: string;
+  rejectButtonClassName?: string;
 }
 
 export function TimelineApprovalGate({
@@ -14,6 +16,8 @@ export function TimelineApprovalGate({
   onApprove,
   onReject,
   className,
+  approveButtonClassName,
+  rejectButtonClassName,
 }: TimelineApprovalGateProps) {
   return (
     <div className={cn('an-timeline__approval', className)} data-approval-id={request.id}>
@@ -25,7 +29,7 @@ export function TimelineApprovalGate({
         {onApprove && (
           <button
             type="button"
-            className="an-timeline__approval-btn an-timeline__approval-btn--approve"
+            className={cn('an-timeline__approval-btn an-timeline__approval-btn--approve', approveButtonClassName)}
             onClick={() => onApprove(request)}
           >
             Approve
@@ -34,7 +38,7 @@ export function TimelineApprovalGate({
         {onReject && (
           <button
             type="button"
-            className="an-timeline__approval-btn an-timeline__approval-btn--reject"
+            className={cn('an-timeline__approval-btn an-timeline__approval-btn--reject', rejectButtonClassName)}
             onClick={() => onReject(request)}
           >
             Reject

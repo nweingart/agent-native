@@ -16,10 +16,13 @@ export interface AutoScrollOptions {
  * Auto-scrolls a container to keep the latest content visible.
  * Pauses when the user scrolls up, resumes when they scroll back down.
  *
- * Returns a ref to attach to the scrollable container.
+ * @param trigger - A value that changes when new content is added (e.g. item count).
+ *                  Scroll fires whenever this value changes.
+ * @param options - Configuration for scroll behavior.
+ * @returns A ref to attach to the scrollable container.
  */
 export function useAutoScroll<T extends HTMLElement = HTMLDivElement>(
-  deps: unknown[],
+  trigger: unknown,
   options: AutoScrollOptions = {},
 ) {
   const { enabled = true, behavior = 'smooth', threshold = 50 } = options;
@@ -46,13 +49,12 @@ export function useAutoScroll<T extends HTMLElement = HTMLDivElement>(
     return () => el.removeEventListener('scroll', handleScroll);
   }, [enabled, threshold]);
 
-  // Auto-scroll when deps change
+  // Auto-scroll when trigger changes
   useEffect(() => {
     if (enabled && isLockedRef.current) {
       scrollToBottom();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, scrollToBottom, ...deps]);
+  }, [enabled, scrollToBottom, trigger]);
 
   return containerRef;
 }

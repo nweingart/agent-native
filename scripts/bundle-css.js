@@ -6,7 +6,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 
 // Read the index.css and inline all @imports
+const seen = new Set();
 function resolveImports(filePath) {
+  if (seen.has(filePath)) return '';
+  seen.add(filePath);
   const content = readFileSync(filePath, 'utf8');
   return content.replace(/@import\s+['"](.+?)['"];/g, (_, importPath) => {
     const resolved = resolve(dirname(filePath), importPath);

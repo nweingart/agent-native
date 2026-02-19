@@ -10,6 +10,8 @@ export interface TimelineStepProps {
   showElapsedTime?: boolean;
   onClick?: (step: AgentStep) => void;
   className?: string;
+  indicatorClassName?: string;
+  bodyClassName?: string;
   renderContent?: (step: AgentStep) => React.ReactNode;
   renderIndicator?: (step: AgentStep) => React.ReactNode;
 }
@@ -18,13 +20,13 @@ function StatusIndicator({ status }: { status: StepStatus }) {
   switch (status) {
     case 'running':
     case 'streaming':
-      return <span className="an-timeline__indicator-spinner" />;
+      return <span className="an-timeline__indicator-spinner" aria-hidden="true" />;
     case 'complete':
-      return <span className="an-timeline__indicator-check" />;
+      return <span className="an-timeline__indicator-check" aria-hidden="true" />;
     case 'error':
-      return <span className="an-timeline__indicator-x" />;
+      return <span className="an-timeline__indicator-x" aria-hidden="true" />;
     default:
-      return <span className="an-timeline__indicator-dot" />;
+      return <span className="an-timeline__indicator-dot" aria-hidden="true" />;
   }
 }
 
@@ -34,6 +36,8 @@ export function TimelineStep({
   showElapsedTime,
   onClick,
   className,
+  indicatorClassName,
+  bodyClassName,
   renderContent,
   renderIndicator,
 }: TimelineStepProps) {
@@ -75,12 +79,12 @@ export function TimelineStep({
       {renderIndicator ? (
         renderIndicator(step)
       ) : (
-        <div className={cn('an-timeline__indicator', `an-timeline__indicator--${status}`)}>
+        <div className={cn('an-timeline__indicator', `an-timeline__indicator--${status}`, indicatorClassName)}>
           <StatusIndicator status={status} />
         </div>
       )}
 
-      <div className="an-timeline__step-body">
+      <div className={cn('an-timeline__step-body', bodyClassName)}>
         {renderContent ? (
           renderContent(step)
         ) : (

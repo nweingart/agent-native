@@ -1,5 +1,7 @@
 /* ── AgentTimeline ──────────────────────────────────────────────────── */
 
+@layer agent-native {
+
 .an-timeline {
   display: flex;
   flex-direction: column;
@@ -28,6 +30,12 @@
 }
 
 .an-timeline__step--clickable:hover {
+  background-color: var(--an-surface-1);
+}
+
+.an-timeline__step--clickable:focus-visible {
+  outline: 2px solid var(--an-status-running);
+  outline-offset: -2px;
   background-color: var(--an-surface-1);
 }
 
@@ -281,6 +289,11 @@
   opacity: 0.85;
 }
 
+.an-timeline__approval-btn:focus-visible {
+  outline: 2px solid var(--an-text-primary);
+  outline-offset: 2px;
+}
+
 .an-timeline__approval-btn--approve {
   background-color: var(--an-status-complete);
   color: var(--an-text-inverse);
@@ -338,3 +351,5 @@
     transition: none;
   }
 }
+
+} /* @layer agent-native */

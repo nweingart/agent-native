@@ -1,5 +1,5 @@
 export { AgentTimeline } from './AgentTimeline';
-export type { AgentTimelineProps } from './AgentTimeline';
+export type { AgentTimelineProps, TimelineClassNames } from './AgentTimeline';
 
 export { TimelineStep } from './TimelineStep';
 export type { TimelineStepProps } from './TimelineStep';

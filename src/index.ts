@@ -1,6 +1,6 @@
 // Components
 export { AgentTimeline } from './components/AgentTimeline';
-export type { AgentTimelineProps } from './components/AgentTimeline';
+export type { AgentTimelineProps, TimelineClassNames } from './components/AgentTimeline';
 export { TimelineStep } from './components/AgentTimeline';
 export type { TimelineStepProps } from './components/AgentTimeline';
 export { TimelineConnector } from './components/AgentTimeline';

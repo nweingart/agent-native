@@ -29,14 +29,7 @@
       }
     },
     "./types": {
-      "import": {
-        "types": "./dist/types.d.ts",
-        "default": "./dist/types.js"
-      },
-      "require": {
-        "types": "./dist/types.d.cts",
-        "default": "./dist/types.cjs"
-      }
+      "types": "./dist/index.d.ts"
     }
   },
   "sideEffects": [
