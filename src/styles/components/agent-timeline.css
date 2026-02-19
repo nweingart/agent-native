@@ -1,0 +1,340 @@
+/* ── AgentTimeline ──────────────────────────────────────────────────── */
+
+.an-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-family: var(--an-font-sans);
+  font-size: var(--an-font-size-base);
+  color: var(--an-text-primary);
+  position: relative;
+}
+
+/* ── Step ───────────────────────────────────────────────────────────── */
+
+.an-timeline__step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--an-space-3);
+  padding: var(--an-space-3) var(--an-space-4);
+  position: relative;
+  border-radius: var(--an-radius-md);
+  transition: background-color var(--an-duration-fast) var(--an-easing-default);
+  animation: an-timeline-fade-in var(--an-duration-normal) var(--an-easing-decelerate);
+}
+
+.an-timeline__step--clickable {
+  cursor: pointer;
+}
+
+.an-timeline__step--clickable:hover {
+  background-color: var(--an-surface-1);
+}
+
+.an-timeline__step--active {
+  background-color: var(--an-surface-2);
+}
+
+/* ── Step Indicator ──────────────────────────────────────────────────── */
+
+.an-timeline__indicator {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--an-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: all var(--an-duration-normal) var(--an-easing-default);
+}
+
+.an-timeline__indicator--pending {
+  background-color: var(--an-status-pending-bg);
+  border: 2px solid var(--an-status-pending);
+}
+
+.an-timeline__indicator--running {
+  background-color: var(--an-status-running-bg);
+  border: 2px solid var(--an-status-running);
+  box-shadow: var(--an-glow-running);
+}
+
+.an-timeline__indicator--streaming {
+  background-color: var(--an-status-streaming-bg);
+  border: 2px solid var(--an-status-streaming);
+  box-shadow: var(--an-glow-running);
+}
+
+.an-timeline__indicator--complete {
+  background-color: var(--an-status-complete);
+  border: 2px solid var(--an-status-complete);
+}
+
+.an-timeline__indicator--error {
+  background-color: var(--an-status-error);
+  border: 2px solid var(--an-status-error);
+  box-shadow: var(--an-glow-error);
+}
+
+.an-timeline__indicator--waiting_approval {
+  background-color: var(--an-status-approval-bg);
+  border: 2px solid var(--an-status-approval);
+  box-shadow: var(--an-glow-approval);
+}
+
+.an-timeline__indicator--skipped {
+  background-color: var(--an-status-skipped-bg);
+  border: 2px dashed var(--an-status-skipped);
+}
+
+.an-timeline__indicator--cancelled {
+  background-color: var(--an-status-cancelled-bg);
+  border: 2px dashed var(--an-status-cancelled);
+}
+
+/* ── Indicator Icons ─────────────────────────────────────────────────── */
+
+.an-timeline__indicator-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--an-radius-full);
+  background-color: var(--an-status-pending);
+}
+
+.an-timeline__indicator-spinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid transparent;
+  border-top-color: var(--an-status-running);
+  border-radius: var(--an-radius-full);
+  animation: an-spin 0.8s linear infinite;
+}
+
+.an-timeline__indicator-check {
+  width: 10px;
+  height: 10px;
+  position: relative;
+}
+
+.an-timeline__indicator-check::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0;
+  width: 4px;
+  height: 8px;
+  border: solid var(--an-text-inverse);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.an-timeline__indicator-x {
+  width: 10px;
+  height: 10px;
+  position: relative;
+}
+
+.an-timeline__indicator-x::before,
+.an-timeline__indicator-x::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 2px;
+  background-color: var(--an-text-inverse);
+  top: 4px;
+  left: 0;
+}
+
+.an-timeline__indicator-x::before {
+  transform: rotate(45deg);
+}
+
+.an-timeline__indicator-x::after {
+  transform: rotate(-45deg);
+}
+
+/* ── Step Body ───────────────────────────────────────────────────────── */
+
+.an-timeline__step-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.an-timeline__step-label {
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.an-timeline__step-description {
+  color: var(--an-text-secondary);
+  font-size: var(--an-font-size-sm);
+  margin-top: var(--an-space-1);
+}
+
+.an-timeline__step-elapsed {
+  color: var(--an-text-tertiary);
+  font-size: var(--an-font-size-xs);
+  font-family: var(--an-font-mono);
+  margin-top: var(--an-space-1);
+}
+
+.an-timeline__step-error {
+  color: var(--an-status-error);
+  font-size: var(--an-font-size-sm);
+  margin-top: var(--an-space-1);
+}
+
+/* ── Connector ───────────────────────────────────────────────────────── */
+
+.an-timeline__connector {
+  width: 2px;
+  margin-left: calc(var(--an-space-4) + 9px); /* align with indicator center */
+  background-color: var(--an-border-color);
+  min-height: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.an-timeline__connector-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--an-status-complete);
+  transition: height var(--an-duration-normal) var(--an-easing-decelerate);
+}
+
+/* ── Tier ────────────────────────────────────────────────────────────── */
+
+.an-timeline__tier {
+  border: var(--an-border-width) solid var(--an-border-color);
+  border-radius: var(--an-radius-lg);
+  padding: var(--an-space-2) 0;
+  margin: var(--an-space-1) 0;
+  background-color: var(--an-surface-1);
+}
+
+.an-timeline__tier-header {
+  display: flex;
+  align-items: center;
+  gap: var(--an-space-2);
+  padding: var(--an-space-1) var(--an-space-4);
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.an-timeline__tier-badge {
+  background-color: var(--an-surface-3);
+  color: var(--an-text-secondary);
+  padding: 0 var(--an-space-2);
+  border-radius: var(--an-radius-full);
+  font-size: var(--an-font-size-xs);
+  font-family: var(--an-font-mono);
+}
+
+/* ── Approval Gate ───────────────────────────────────────────────────── */
+
+.an-timeline__approval {
+  display: flex;
+  flex-direction: column;
+  gap: var(--an-space-2);
+  padding: var(--an-space-3) var(--an-space-4);
+  margin: var(--an-space-1) var(--an-space-4);
+  border: var(--an-border-width) solid var(--an-status-approval);
+  border-radius: var(--an-radius-md);
+  background-color: var(--an-status-approval-bg);
+  animation: an-timeline-fade-in var(--an-duration-normal) var(--an-easing-decelerate);
+}
+
+.an-timeline__approval-title {
+  font-weight: 600;
+  color: var(--an-status-approval);
+  font-size: var(--an-font-size-sm);
+}
+
+.an-timeline__approval-description {
+  font-size: var(--an-font-size-sm);
+  color: var(--an-text-secondary);
+}
+
+.an-timeline__approval-actions {
+  display: flex;
+  gap: var(--an-space-2);
+  margin-top: var(--an-space-1);
+}
+
+.an-timeline__approval-btn {
+  padding: var(--an-space-1) var(--an-space-4);
+  border-radius: var(--an-radius-md);
+  font-size: var(--an-font-size-sm);
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: opacity var(--an-duration-fast) var(--an-easing-default);
+}
+
+.an-timeline__approval-btn:hover {
+  opacity: 0.85;
+}
+
+.an-timeline__approval-btn--approve {
+  background-color: var(--an-status-complete);
+  color: var(--an-text-inverse);
+}
+
+.an-timeline__approval-btn--reject {
+  background-color: var(--an-status-error);
+  color: var(--an-text-inverse);
+}
+
+/* ── Animations ──────────────────────────────────────────────────────── */
+
+@keyframes an-timeline-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes an-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes an-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ── Reduced Motion ──────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .an-timeline__step {
+    animation: none;
+  }
+
+  .an-timeline__approval {
+    animation: none;
+  }
+
+  .an-timeline__indicator-spinner {
+    animation: an-pulse 2s ease-in-out infinite;
+  }
+
+  .an-timeline__connector-fill {
+    transition: none;
+  }
+}
