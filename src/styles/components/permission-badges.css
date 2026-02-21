@@ -1,0 +1,154 @@
+@layer agent-native {
+
+/* ── PermissionBadges ────────────────────────────────────────────── */
+
+.an-permission-badges {
+  font-family: var(--an-font-sans);
+  font-size: var(--an-font-size-base);
+  color: var(--an-text-primary);
+}
+
+.an-permission-badges--inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--an-space-2);
+}
+
+.an-permission-badges--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--an-space-2);
+}
+
+/* ── Badge — Inline ──────────────────────────────────────────────── */
+
+.an-permission-badges__badge--inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--an-space-1);
+  padding: var(--an-space-1) var(--an-space-2);
+  border-radius: var(--an-radius-full);
+  font-size: var(--an-font-size-sm);
+  border: var(--an-border-width) solid transparent;
+  transition:
+    background-color var(--an-duration-fast) var(--an-easing-default),
+    border-color var(--an-duration-fast) var(--an-easing-default);
+}
+
+/* ── Badge — Grid ────────────────────────────────────────────────── */
+
+.an-permission-badges__badge--grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--an-space-1);
+  padding: var(--an-space-3);
+  border-radius: var(--an-radius-md);
+  border: var(--an-border-width) solid var(--an-border-color);
+  transition:
+    background-color var(--an-duration-fast) var(--an-easing-default),
+    border-color var(--an-duration-fast) var(--an-easing-default);
+}
+
+.an-permission-badges__badge--grid .an-permission-badges__badge-icon {
+  margin-bottom: var(--an-space-1);
+}
+
+.an-permission-badges__badge--grid .an-permission-badges__badge-name {
+  font-weight: 600;
+}
+
+.an-permission-badges__badge-desc {
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-secondary);
+  line-height: 1.4;
+}
+
+/* ── Granted ─────────────────────────────────────────────────────── */
+
+.an-permission-badges__badge--granted {
+  background-color: var(--an-status-complete-bg);
+  color: var(--an-status-complete);
+  border-color: var(--an-status-complete);
+}
+
+.an-permission-badges__badge--granted .an-permission-badges__badge-name {
+  color: var(--an-text-primary);
+}
+
+/* ── Denied ──────────────────────────────────────────────────────── */
+
+.an-permission-badges__badge--denied {
+  background-color: var(--an-status-error-bg);
+  color: var(--an-status-error);
+  border-color: var(--an-status-error);
+}
+
+.an-permission-badges__badge--denied .an-permission-badges__badge-name {
+  color: var(--an-text-primary);
+}
+
+/* ── Clickable ───────────────────────────────────────────────────── */
+
+.an-permission-badges__badge--clickable {
+  cursor: pointer;
+}
+
+.an-permission-badges__badge--clickable:hover {
+  filter: brightness(0.95);
+}
+
+.an-permission-badges__badge--clickable:focus-visible {
+  outline: 2px solid var(--an-status-running);
+  outline-offset: 2px;
+}
+
+/* ── Icon ────────────────────────────────────────────────────────── */
+
+.an-permission-badges__badge-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.an-permission-badges__icon {
+  display: block;
+}
+
+/* ── Category Groups ─────────────────────────────────────────────── */
+
+.an-permission-badges--grouped {
+  display: flex;
+  flex-direction: column;
+  gap: var(--an-space-4);
+}
+
+.an-permission-badges__group-label {
+  font-size: var(--an-font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--an-text-secondary);
+  margin-bottom: var(--an-space-1);
+}
+
+.an-permission-badges__group-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--an-space-2);
+}
+
+.an-permission-badges--grid .an-permission-badges__group-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+/* ── Reduced Motion ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .an-permission-badges__badge--inline,
+  .an-permission-badges__badge--grid {
+    transition: none;
+  }
+}
+
+} /* @layer agent-native */

@@ -1,0 +1,197 @@
+@layer agent-native {
+
+/* ── DiffViewer ───────────────────────────────────────────────────── */
+
+.an-diff-viewer {
+  font-family: var(--an-font-mono);
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-primary);
+  border: var(--an-border-width) solid var(--an-border-color);
+  border-radius: var(--an-radius-md);
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+
+.an-diff-viewer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--an-space-3);
+  padding: var(--an-space-2) var(--an-space-3);
+  background-color: var(--an-surface-1);
+  border-bottom: var(--an-border-width) solid var(--an-border-color);
+}
+
+.an-diff-viewer__header-path {
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.an-diff-viewer__header-badge {
+  flex-shrink: 0;
+  padding: 0 var(--an-space-2);
+  border-radius: var(--an-radius-full);
+  font-size: var(--an-font-size-xs);
+  font-weight: 500;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.an-diff-viewer__header-badge--added {
+  background-color: var(--an-diff-add-bg);
+  color: var(--an-diff-add);
+}
+
+.an-diff-viewer__header-badge--modified {
+  background-color: var(--an-status-warning-bg);
+  color: var(--an-status-warning);
+}
+
+.an-diff-viewer__header-badge--deleted {
+  background-color: var(--an-diff-remove-bg);
+  color: var(--an-diff-remove);
+}
+
+.an-diff-viewer__header-badge--renamed {
+  background-color: var(--an-status-running-bg);
+  color: var(--an-status-running);
+}
+
+/* ── Body ─────────────────────────────────────────────────────────── */
+
+.an-diff-viewer__body {
+  overflow-x: auto;
+}
+
+/* ── Hunk ─────────────────────────────────────────────────────────── */
+
+.an-diff-viewer__hunk + .an-diff-viewer__hunk {
+  border-top: var(--an-border-width) solid var(--an-border-color);
+}
+
+.an-diff-viewer__hunk-header {
+  padding: var(--an-space-1) var(--an-space-3);
+  background-color: var(--an-diff-hunk-bg);
+  color: var(--an-text-secondary);
+  font-size: var(--an-font-size-xs);
+  user-select: none;
+}
+
+/* ── Line (Unified) ───────────────────────────────────────────────── */
+
+.an-diff-viewer__line {
+  display: flex;
+  align-items: stretch;
+  min-height: 1.5em;
+  line-height: 1.5;
+}
+
+.an-diff-viewer__line[data-line-type] {
+  cursor: default;
+}
+
+.an-diff-viewer__line--added {
+  background-color: var(--an-diff-add-bg);
+}
+
+.an-diff-viewer__line--removed {
+  background-color: var(--an-diff-remove-bg);
+}
+
+.an-diff-viewer__line--context {
+  background-color: transparent;
+}
+
+/* ── Line Number ──────────────────────────────────────────────────── */
+
+.an-diff-viewer__line-number {
+  display: inline-block;
+  min-width: 3.5em;
+  padding: 0 var(--an-space-2);
+  text-align: right;
+  color: var(--an-text-tertiary);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* ── Line Prefix (+/-/ ) ─────────────────────────────────────────── */
+
+.an-diff-viewer__line-prefix {
+  display: inline-block;
+  width: 1.5em;
+  text-align: center;
+  color: var(--an-text-tertiary);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.an-diff-viewer__line--added .an-diff-viewer__line-prefix {
+  color: var(--an-diff-add);
+}
+
+.an-diff-viewer__line--removed .an-diff-viewer__line-prefix {
+  color: var(--an-diff-remove);
+}
+
+/* ── Line Content ─────────────────────────────────────────────────── */
+
+.an-diff-viewer__line-content {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  padding-right: var(--an-space-3);
+}
+
+/* ── Split View ───────────────────────────────────────────────────── */
+
+.an-diff-viewer__split-row {
+  display: flex;
+}
+
+.an-diff-viewer__split-cell {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  min-height: 1.5em;
+  line-height: 1.5;
+  min-width: 0;
+}
+
+.an-diff-viewer__split-cell + .an-diff-viewer__split-cell {
+  border-left: var(--an-border-width) solid var(--an-border-color);
+}
+
+.an-diff-viewer__split-cell--added {
+  background-color: var(--an-diff-add-bg);
+}
+
+.an-diff-viewer__split-cell--removed {
+  background-color: var(--an-diff-remove-bg);
+}
+
+.an-diff-viewer__split-cell--context {
+  background-color: transparent;
+}
+
+.an-diff-viewer__split-cell--empty {
+  background-color: var(--an-surface-1);
+}
+
+.an-diff-viewer__split-cell--added .an-diff-viewer__line-prefix {
+  color: var(--an-diff-add);
+}
+
+.an-diff-viewer__split-cell--removed .an-diff-viewer__line-prefix {
+  color: var(--an-diff-remove);
+}
+
+.an-diff-viewer__hunk-header--split {
+  /* spans full width in split mode */
+}
+
+} /* @layer agent-native */

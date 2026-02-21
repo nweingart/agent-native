@@ -1,19 +1,28 @@
 import React from 'react';
-import type { AgentStep, StepStatus } from '../../types';
+import type { AgentStep, StepStatus, ToolCall, Artifact } from '../../types';
 import { cn } from '../../utils/cn';
 import { useVisualMemory } from '../../hooks/useVisualMemory';
 import { useElapsedTime } from '../../hooks/useElapsedTime';
+import { TimelineToolCallList } from './TimelineToolCallList';
+import type { TimelineToolCallProps } from './TimelineToolCall';
+import type { TimelineArtifactProps } from './TimelineArtifact';
 
 export interface TimelineStepProps {
   step: AgentStep;
   isActive?: boolean;
   showElapsedTime?: boolean;
+  showToolCalls?: boolean;
+  defaultToolCallsExpanded?: boolean;
   onClick?: (step: AgentStep) => void;
   className?: string;
   indicatorClassName?: string;
   bodyClassName?: string;
   renderContent?: (step: AgentStep) => React.ReactNode;
   renderIndicator?: (step: AgentStep) => React.ReactNode;
+  renderToolContent?: TimelineToolCallProps['renderToolContent'];
+  renderArtifactContent?: TimelineArtifactProps['renderArtifactContent'];
+  /** @internal Controls which connector line segments are visible. */
+  connectorSegments?: 'both' | 'below' | 'above' | 'none';
 }
 
 function StatusIndicator({ status }: { status: StepStatus }) {
@@ -34,12 +43,17 @@ export function TimelineStep({
   step,
   isActive,
   showElapsedTime,
+  showToolCalls,
+  defaultToolCallsExpanded,
   onClick,
   className,
   indicatorClassName,
   bodyClassName,
   renderContent,
   renderIndicator,
+  renderToolContent,
+  renderArtifactContent,
+  connectorSegments = 'none',
 }: TimelineStepProps) {
   const { current: status } = useVisualMemory(step.status);
   const elapsed = useElapsedTime(step.startedAt, step.completedAt);
@@ -58,6 +72,7 @@ export function TimelineStep({
       className={cn(
         'an-timeline__step',
         `an-timeline__step--${status}`,
+        `an-timeline__step--connector-${connectorSegments}`,
         isActive && 'an-timeline__step--active',
         isClickable && 'an-timeline__step--clickable',
         className,
@@ -90,15 +105,34 @@ export function TimelineStep({
         ) : (
           <>
             <div className="an-timeline__step-label">{step.label}</div>
-            {step.description && (
-              <div className="an-timeline__step-description">{step.description}</div>
-            )}
-            {step.error && status === 'error' && (
-              <div className="an-timeline__step-error">{step.error}</div>
-            )}
-            {showTimer && (
-              <div className="an-timeline__step-elapsed">{elapsed}</div>
-            )}
+            <div className={cn(
+              'an-timeline__step-description',
+              !step.description && 'an-timeline__step-description--hidden',
+            )}>
+              {step.description}
+            </div>
+            <div className={cn(
+              'an-timeline__step-error',
+              !(step.error && status === 'error') && 'an-timeline__step-error--hidden',
+            )}>
+              {step.error}
+            </div>
+            {showToolCalls && (step.toolCalls?.length || step.artifacts?.length) ? (
+              <TimelineToolCallList
+                toolCalls={step.toolCalls}
+                artifacts={step.artifacts}
+                showElapsedTime={showElapsedTime}
+                defaultExpanded={defaultToolCallsExpanded}
+                renderToolContent={renderToolContent}
+                renderArtifactContent={renderArtifactContent}
+              />
+            ) : null}
+            <div className={cn(
+              'an-timeline__step-elapsed',
+              !showTimer && 'an-timeline__step-elapsed--hidden',
+            )}>
+              {elapsed}
+            </div>
           </>
         )}
       </div>

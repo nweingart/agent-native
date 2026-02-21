@@ -1,5 +1,5 @@
 import React from 'react';
-import type { AgentStep, StepTier } from '../../types';
+import type { AgentStep, StepTier, ToolCall, Artifact } from '../../types';
 import { cn } from '../../utils/cn';
 import { TimelineStep } from './TimelineStep';
 import type { TimelineStepProps } from './TimelineStep';
@@ -9,6 +9,8 @@ export interface TimelineTierProps {
   tier: StepTier;
   steps: AgentStep[];
   showElapsedTime?: boolean;
+  showToolCalls?: boolean;
+  defaultToolCallsExpanded?: boolean;
   activeStepId?: string;
   onStepClick?: (step: AgentStep) => void;
   classNames?: TimelineClassNames;
@@ -16,12 +18,16 @@ export interface TimelineTierProps {
   renderStepContent?: TimelineStepProps['renderContent'];
   renderStepIndicator?: TimelineStepProps['renderIndicator'];
   renderTierHeader?: (tier: StepTier) => React.ReactNode;
+  renderToolContent?: (toolCall: ToolCall) => React.ReactNode;
+  renderArtifactContent?: (artifact: Artifact) => React.ReactNode;
 }
 
 export function TimelineTier({
   tier,
   steps,
   showElapsedTime,
+  showToolCalls,
+  defaultToolCallsExpanded,
   activeStepId,
   onStepClick,
   classNames,
@@ -29,6 +35,8 @@ export function TimelineTier({
   renderStepContent,
   renderStepIndicator,
   renderTierHeader,
+  renderToolContent,
+  renderArtifactContent,
 }: TimelineTierProps) {
   const tierSteps = steps.filter((s) => tier.stepIds.includes(s.id));
 
@@ -48,12 +56,16 @@ export function TimelineTier({
           step={step}
           isActive={step.id === activeStepId}
           showElapsedTime={showElapsedTime}
+          showToolCalls={showToolCalls}
+          defaultToolCallsExpanded={defaultToolCallsExpanded}
           onClick={onStepClick}
           className={classNames?.step}
           indicatorClassName={classNames?.indicator}
           bodyClassName={classNames?.stepBody}
           renderContent={renderStepContent}
           renderIndicator={renderStepIndicator}
+          renderToolContent={renderToolContent}
+          renderArtifactContent={renderArtifactContent}
         />
       ))}
     </div>

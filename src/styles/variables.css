@@ -73,6 +73,19 @@
   --an-glow-error: 0 0 8px rgba(255, 107, 107, 0.3);
   --an-glow-approval: 0 0 8px rgba(204, 93, 232, 0.3);
 
+  /* ── Budget Segment Colors ────────────────────────────────────────── */
+  --an-budget-input: #339af0;
+  --an-budget-output: #51cf66;
+  --an-budget-system: #cc5de8;
+  --an-budget-cache: #868e96;
+
+  /* ── Diff Colors ──────────────────────────────────────────────────── */
+  --an-diff-add: #2ea043;
+  --an-diff-add-bg: rgba(46, 160, 67, 0.1);
+  --an-diff-remove: #f85149;
+  --an-diff-remove-bg: rgba(248, 81, 73, 0.1);
+  --an-diff-hunk-bg: rgba(51, 154, 240, 0.08);
+
   /* ── Animation ─────────────────────────────────────────────────────── */
   --an-duration-fast: 150ms;
   --an-duration-normal: 300ms;
@@ -107,6 +120,17 @@
   --an-status-approval-bg: #2a1a2f;
   --an-status-skipped-bg: #25262b;
   --an-status-cancelled-bg: #25262b;
+
+  --an-budget-input: #4dabf7;
+  --an-budget-output: #69db7c;
+  --an-budget-system: #da77f2;
+  --an-budget-cache: #909296;
+
+  --an-diff-add: #3fb950;
+  --an-diff-add-bg: rgba(63, 185, 80, 0.15);
+  --an-diff-remove: #f85149;
+  --an-diff-remove-bg: rgba(248, 81, 73, 0.15);
+  --an-diff-hunk-bg: rgba(51, 154, 240, 0.12);
 
   --an-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
   --an-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);

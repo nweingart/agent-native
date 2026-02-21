@@ -1,2 +1,12 @@
 @import './variables.css';
 @import './components/agent-timeline.css';
+@import './components/streaming-text.css';
+@import './components/thinking-indicator.css';
+@import './components/agent-status-bar.css';
+@import './components/diff-viewer.css';
+@import './components/terminal-output.css';
+@import './components/task-tree.css';
+@import './components/agent-handoff.css';
+@import './components/context-budget.css';
+@import './components/cost-tracker.css';
+@import './components/permission-badges.css';

@@ -1,0 +1,158 @@
+@layer agent-native {
+
+/* ── ContextBudget ───────────────────────────────────────────────── */
+
+.an-context-budget {
+  font-family: var(--an-font-sans);
+  font-size: var(--an-font-size-base);
+  color: var(--an-text-primary);
+}
+
+/* ── Bar Layout ──────────────────────────────────────────────────── */
+
+.an-context-budget__bar {
+  display: flex;
+  height: 12px;
+  border-radius: var(--an-radius-full);
+  border: var(--an-border-width) solid var(--an-border-color);
+  background-color: var(--an-surface-1);
+  overflow: hidden;
+  transition: border-color var(--an-duration-fast) var(--an-easing-default);
+}
+
+.an-context-budget__bar--warning {
+  border-color: var(--an-status-warning);
+}
+
+.an-context-budget__bar--danger {
+  border-color: var(--an-status-error);
+}
+
+.an-context-budget__segment {
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: an-budget-grow var(--an-duration-normal) var(--an-easing-decelerate) both;
+}
+
+.an-context-budget__segment--system { background-color: var(--an-budget-system); }
+.an-context-budget__segment--input { background-color: var(--an-budget-input); }
+.an-context-budget__segment--output { background-color: var(--an-budget-output); }
+.an-context-budget__segment--cache { background-color: var(--an-budget-cache); }
+
+@keyframes an-budget-grow {
+  from { max-width: 0; }
+  to { max-width: 100%; }
+}
+
+.an-context-budget__label {
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-inverse);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+}
+
+/* ── Legend ───────────────────────────────────────────────────────── */
+
+.an-context-budget__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--an-space-3);
+  margin-top: var(--an-space-2);
+}
+
+.an-context-budget__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--an-space-1);
+  font-size: var(--an-font-size-sm);
+}
+
+.an-context-budget__legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--an-radius-full);
+  flex-shrink: 0;
+}
+
+.an-context-budget__legend-dot--remaining {
+  background-color: transparent;
+  border: var(--an-border-width) solid var(--an-border-color);
+}
+
+.an-context-budget__legend-label {
+  color: var(--an-text-secondary);
+}
+
+.an-context-budget__legend-value {
+  font-family: var(--an-font-mono);
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-tertiary);
+}
+
+/* ── Ring Layout ─────────────────────────────────────────────────── */
+
+.an-context-budget__ring-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.an-context-budget__ring {
+  transform: rotate(-90deg);
+}
+
+.an-context-budget__ring-bg {
+  stroke: var(--an-surface-2);
+}
+
+.an-context-budget__ring-segment {
+  transition: stroke-dasharray var(--an-duration-normal) var(--an-easing-decelerate);
+}
+
+.an-context-budget__ring-center {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.an-context-budget__ring-pct {
+  font-size: var(--an-font-size-lg);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.an-context-budget__ring-center--warning .an-context-budget__ring-pct {
+  color: var(--an-status-warning);
+}
+
+.an-context-budget__ring-center--danger .an-context-budget__ring-pct {
+  color: var(--an-status-error);
+}
+
+.an-context-budget__ring-label {
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-secondary);
+}
+
+/* ── Reduced Motion ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .an-context-budget__segment {
+    animation: none;
+  }
+
+  .an-context-budget__ring-segment {
+    transition: none;
+  }
+}
+
+} /* @layer agent-native */

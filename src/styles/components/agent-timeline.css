@@ -43,6 +43,51 @@
   background-color: var(--an-surface-2);
 }
 
+/* ── Connector via ::before ─────────────────────────────────────────── */
+
+.an-timeline__step::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--an-space-4) + 9px);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--an-border-color);
+  pointer-events: none;
+}
+
+.an-timeline__step--connector-none::before {
+  display: none;
+}
+
+.an-timeline__step--connector-below::before {
+  top: calc(var(--an-space-3) + 11px);
+}
+
+.an-timeline__step--connector-above::before {
+  bottom: auto;
+  height: calc(var(--an-space-3) + 11px);
+}
+
+/* Connector color follows step status */
+.an-timeline__step--complete::before {
+  background-color: var(--an-status-complete);
+}
+
+.an-timeline__step--error::before {
+  background-color: var(--an-status-error);
+}
+
+/* Hide connector lines on steps inside tiers */
+.an-timeline__tier .an-timeline__step::before {
+  display: none;
+}
+
+/* Hide all connector lines when connectors are disabled */
+.an-timeline--no-connectors .an-timeline__step::before {
+  display: none;
+}
+
 /* ── Step Indicator ──────────────────────────────────────────────────── */
 
 .an-timeline__indicator {
@@ -55,6 +100,8 @@
   justify-content: center;
   margin-top: 1px;
   transition: all var(--an-duration-normal) var(--an-easing-default);
+  position: relative;
+  z-index: 1;
 }
 
 .an-timeline__indicator--pending {
@@ -178,6 +225,13 @@
   color: var(--an-text-secondary);
   font-size: var(--an-font-size-sm);
   margin-top: var(--an-space-1);
+  transition: opacity var(--an-duration-normal) var(--an-easing-decelerate),
+              visibility var(--an-duration-normal);
+}
+
+.an-timeline__step-description--hidden {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .an-timeline__step-elapsed {
@@ -185,15 +239,29 @@
   font-size: var(--an-font-size-xs);
   font-family: var(--an-font-mono);
   margin-top: var(--an-space-1);
+  transition: opacity var(--an-duration-normal) var(--an-easing-decelerate),
+              visibility var(--an-duration-normal);
+}
+
+.an-timeline__step-elapsed--hidden {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .an-timeline__step-error {
   color: var(--an-status-error);
   font-size: var(--an-font-size-sm);
   margin-top: var(--an-space-1);
+  transition: opacity var(--an-duration-normal) var(--an-easing-decelerate),
+              visibility var(--an-duration-normal);
 }
 
-/* ── Connector ───────────────────────────────────────────────────────── */
+.an-timeline__step-error--hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ── Connector (legacy — kept for compound export) ──────────────────── */
 
 .an-timeline__connector {
   width: 2px;
@@ -246,16 +314,24 @@
 
 /* ── Approval Gate ───────────────────────────────────────────────────── */
 
+.an-timeline__approval-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  animation: an-timeline-fade-in var(--an-duration-normal) var(--an-easing-decelerate);
+}
+
 .an-timeline__approval {
   display: flex;
   flex-direction: column;
   gap: var(--an-space-2);
   padding: var(--an-space-3) var(--an-space-4);
-  margin: var(--an-space-1) var(--an-space-4);
+  margin: 0 var(--an-space-4) var(--an-space-4);
   border: var(--an-border-width) solid var(--an-status-approval);
   border-radius: var(--an-radius-md);
   background-color: var(--an-status-approval-bg);
-  animation: an-timeline-fade-in var(--an-duration-normal) var(--an-easing-decelerate);
 }
 
 .an-timeline__approval-title {
@@ -309,11 +385,9 @@
 @keyframes an-timeline-fade-in {
   from {
     opacity: 0;
-    transform: translateY(4px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -332,6 +406,320 @@
   }
 }
 
+/* ── Tool Call List ─────────────────────────────────────────────────── */
+
+.an-timeline__tool-list {
+  margin-top: var(--an-space-2);
+  border-left: 2px solid var(--an-border-color);
+  padding-left: var(--an-space-3);
+}
+
+.an-timeline__tool-list-summary {
+  font-size: var(--an-font-size-xs);
+  font-family: var(--an-font-mono);
+  color: var(--an-text-secondary);
+  cursor: pointer;
+  padding: var(--an-space-1) 0;
+  user-select: none;
+  list-style: none;
+}
+
+.an-timeline__tool-list-summary::-webkit-details-marker {
+  display: none;
+}
+
+.an-timeline__tool-list-summary::before {
+  content: '\25B6';
+  display: inline-block;
+  margin-right: var(--an-space-1);
+  font-size: 0.6em;
+  transition: transform var(--an-duration-fast) var(--an-easing-default);
+}
+
+.an-timeline__tool-list[open] > .an-timeline__tool-list-summary::before {
+  transform: rotate(90deg);
+}
+
+.an-timeline__tool-list-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--an-space-1);
+  padding-top: var(--an-space-1);
+}
+
+/* ── Tool Call ──────────────────────────────────────────────────────── */
+
+.an-timeline__tool-call {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--an-space-2);
+  padding: var(--an-space-1) var(--an-space-2);
+  border-radius: var(--an-radius-sm);
+  animation: an-timeline-fade-in var(--an-duration-normal) var(--an-easing-decelerate);
+}
+
+.an-timeline__tool-call--running {
+  background-color: var(--an-status-running-bg);
+}
+
+.an-timeline__tool-call--error {
+  background-color: var(--an-status-error-bg);
+}
+
+.an-timeline__tool-call-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.an-timeline__tool-call-header {
+  display: flex;
+  align-items: center;
+  gap: var(--an-space-2);
+}
+
+/* ── Tool Call Indicator ───────────────────────────────────────────── */
+
+.an-timeline__tool-indicator {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--an-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  transition: all var(--an-duration-normal) var(--an-easing-default);
+}
+
+.an-timeline__tool-indicator--pending {
+  background-color: var(--an-status-pending-bg);
+  border: 1.5px solid var(--an-status-pending);
+}
+
+.an-timeline__tool-indicator--running {
+  background-color: var(--an-status-running-bg);
+  border: 1.5px solid var(--an-status-running);
+}
+
+.an-timeline__tool-indicator--complete {
+  background-color: var(--an-status-complete);
+  border: 1.5px solid var(--an-status-complete);
+}
+
+.an-timeline__tool-indicator--error {
+  background-color: var(--an-status-error);
+  border: 1.5px solid var(--an-status-error);
+}
+
+.an-timeline__tool-indicator-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--an-radius-full);
+  background-color: var(--an-status-pending);
+}
+
+.an-timeline__tool-indicator-spinner {
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid transparent;
+  border-top-color: var(--an-status-running);
+  border-radius: var(--an-radius-full);
+  animation: an-spin 0.8s linear infinite;
+}
+
+.an-timeline__tool-indicator-check {
+  width: 8px;
+  height: 8px;
+  position: relative;
+}
+
+.an-timeline__tool-indicator-check::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0;
+  width: 3px;
+  height: 6px;
+  border: solid var(--an-text-inverse);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+.an-timeline__tool-indicator-x {
+  width: 8px;
+  height: 8px;
+  position: relative;
+}
+
+.an-timeline__tool-indicator-x::before,
+.an-timeline__tool-indicator-x::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 1.5px;
+  background-color: var(--an-text-inverse);
+  top: 3.25px;
+  left: 0;
+}
+
+.an-timeline__tool-indicator-x::before {
+  transform: rotate(45deg);
+}
+
+.an-timeline__tool-indicator-x::after {
+  transform: rotate(-45deg);
+}
+
+/* ── Tool Call Text ────────────────────────────────────────────────── */
+
+.an-timeline__tool-name {
+  font-family: var(--an-font-mono);
+  font-size: var(--an-font-size-sm);
+  color: var(--an-text-secondary);
+  font-weight: 500;
+}
+
+.an-timeline__tool-elapsed {
+  font-family: var(--an-font-mono);
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-tertiary);
+}
+
+.an-timeline__tool-error {
+  color: var(--an-status-error);
+  font-size: var(--an-font-size-xs);
+  margin-top: var(--an-space-1);
+}
+
+/* ── Tool Call I/O ─────────────────────────────────────────────────── */
+
+.an-timeline__tool-io {
+  margin-top: var(--an-space-1);
+}
+
+.an-timeline__tool-io-summary {
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-tertiary);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.an-timeline__tool-io-summary::-webkit-details-marker {
+  display: none;
+}
+
+.an-timeline__tool-io-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--an-space-2);
+  margin-top: var(--an-space-1);
+}
+
+.an-timeline__tool-io-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--an-space-1);
+}
+
+.an-timeline__tool-io-label {
+  font-size: var(--an-font-size-xs);
+  font-weight: 600;
+  color: var(--an-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.an-timeline__tool-io-pre {
+  background-color: var(--an-surface-1);
+  padding: var(--an-space-2);
+  border-radius: var(--an-radius-sm);
+  font-family: var(--an-font-mono);
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-primary);
+  overflow-x: auto;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.an-timeline__tool-io-empty {
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-tertiary);
+  font-style: italic;
+}
+
+/* ── Artifact ──────────────────────────────────────────────────────── */
+
+.an-timeline__artifact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--an-space-1);
+  padding: var(--an-space-2);
+  border: var(--an-border-width) solid var(--an-border-color);
+  border-radius: var(--an-radius-md);
+  animation: an-timeline-fade-in var(--an-duration-normal) var(--an-easing-decelerate);
+}
+
+.an-timeline__artifact-header {
+  display: flex;
+  align-items: center;
+  gap: var(--an-space-2);
+}
+
+.an-timeline__artifact-badge {
+  background-color: var(--an-surface-3);
+  color: var(--an-text-secondary);
+  padding: 0 var(--an-space-2);
+  border-radius: var(--an-radius-full);
+  font-size: var(--an-font-size-xs);
+  font-family: var(--an-font-mono);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.an-timeline__artifact-title {
+  font-size: var(--an-font-size-sm);
+  color: var(--an-text-primary);
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.an-timeline__artifact-content {
+  background-color: var(--an-surface-1);
+  padding: var(--an-space-2);
+  border-radius: var(--an-radius-sm);
+  font-family: var(--an-font-mono);
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-primary);
+  overflow-x: auto;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.an-timeline__artifact-content--placeholder {
+  color: var(--an-text-tertiary);
+  font-style: italic;
+}
+
+.an-timeline__artifact-details {
+  /* no extra styles needed — inherits from artifact */
+}
+
+.an-timeline__artifact-preview {
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.an-timeline__artifact-preview::-webkit-details-marker {
+  display: none;
+}
+
 /* ── Reduced Motion ──────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -339,7 +727,17 @@
     animation: none;
   }
 
-  .an-timeline__approval {
+  .an-timeline__step::before {
+    transition: none;
+  }
+
+  .an-timeline__step-description,
+  .an-timeline__step-error,
+  .an-timeline__step-elapsed {
+    transition: none;
+  }
+
+  .an-timeline__approval-overlay {
     animation: none;
   }
 
@@ -348,6 +746,22 @@
   }
 
   .an-timeline__connector-fill {
+    transition: none;
+  }
+
+  .an-timeline__tool-call {
+    animation: none;
+  }
+
+  .an-timeline__tool-indicator-spinner {
+    animation: an-pulse 2s ease-in-out infinite;
+  }
+
+  .an-timeline__artifact {
+    animation: none;
+  }
+
+  .an-timeline__tool-list-summary::before {
     transition: none;
   }
 }

@@ -1,0 +1,71 @@
+@layer agent-native {
+
+/* ── StreamingText ─────────────────────────────────────────────────── */
+
+.an-streaming-text {
+  font-family: var(--an-font-sans);
+  font-size: var(--an-font-size-base);
+  color: var(--an-text-primary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.an-streaming-text__text {
+  /* Text inherits from root */
+}
+
+/* ── Cursor ────────────────────────────────────────────────────────── */
+
+.an-streaming-text__cursor {
+  display: inline-block;
+  animation: an-cursor-blink 1s step-end infinite;
+}
+
+.an-streaming-text__cursor--line {
+  width: 2px;
+  height: 1.2em;
+  vertical-align: text-bottom;
+  background-color: var(--an-text-primary);
+}
+
+.an-streaming-text__cursor--block {
+  width: 0.6em;
+  height: 1.2em;
+  vertical-align: text-bottom;
+  background-color: var(--an-text-primary);
+  opacity: 0.7;
+}
+
+.an-streaming-text__cursor--underscore {
+  width: 0.6em;
+  height: 0;
+  vertical-align: text-bottom;
+  border-bottom: 2px solid var(--an-text-primary);
+}
+
+.an-streaming-text__cursor--hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+@keyframes an-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .an-streaming-text__cursor {
+    animation: none;
+    opacity: 1;
+  }
+
+  .an-streaming-text__cursor--hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+} /* @layer agent-native */

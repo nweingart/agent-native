@@ -15,3 +15,12 @@ export type { TimelineApprovalGateProps } from './TimelineApprovalGate';
 
 export { TimelineSummary } from './TimelineSummary';
 export type { TimelineSummaryProps } from './TimelineSummary';
+
+export { TimelineToolCall } from './TimelineToolCall';
+export type { TimelineToolCallProps } from './TimelineToolCall';
+
+export { TimelineToolCallList } from './TimelineToolCallList';
+export type { TimelineToolCallListProps } from './TimelineToolCallList';
+
+export { TimelineArtifact } from './TimelineArtifact';
+export type { TimelineArtifactProps } from './TimelineArtifact';

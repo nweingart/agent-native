@@ -101,12 +101,17 @@ describe('AgentTimeline', () => {
     ];
 
     render(<AgentTimeline steps={steps} showElapsedTime />);
-    expect(document.querySelector('.an-timeline__step-elapsed')).toBeInTheDocument();
+    const elapsed = document.querySelector('.an-timeline__step-elapsed');
+    expect(elapsed).toBeInTheDocument();
+    expect(elapsed).not.toHaveClass('an-timeline__step-elapsed--hidden');
   });
 
   it('does not show elapsed time when disabled', () => {
     render(<AgentTimeline steps={sampleSteps} showElapsedTime={false} />);
-    expect(document.querySelector('.an-timeline__step-elapsed')).not.toBeInTheDocument();
+    const elapsed = document.querySelector('.an-timeline__step-elapsed');
+    // Element is always in the DOM but hidden via visibility/opacity
+    expect(elapsed).toBeInTheDocument();
+    expect(elapsed).toHaveClass('an-timeline__step-elapsed--hidden');
   });
 
   it('renders approval gate when present', () => {
@@ -145,16 +150,24 @@ describe('AgentTimeline', () => {
     expect(container.querySelectorAll('.an-timeline__step')).toHaveLength(0);
   });
 
-  it('renders connectors between steps by default', () => {
+  it('applies connector segment classes to steps by default', () => {
     render(<AgentTimeline steps={sampleSteps} />);
-    const connectors = document.querySelectorAll('.an-timeline__connector');
-    expect(connectors.length).toBeGreaterThan(0);
+    const steps = document.querySelectorAll('.an-timeline__step');
+    // 3 flat steps: first=below, middle=both, last=above
+    expect(steps[0]).toHaveClass('an-timeline__step--connector-below');
+    expect(steps[1]).toHaveClass('an-timeline__step--connector-both');
+    expect(steps[2]).toHaveClass('an-timeline__step--connector-above');
   });
 
   it('hides connectors when showConnectors is false', () => {
-    render(<AgentTimeline steps={sampleSteps} showConnectors={false} />);
-    const connectors = document.querySelectorAll('.an-timeline__connector');
-    expect(connectors.length).toBe(0);
+    const { container } = render(<AgentTimeline steps={sampleSteps} showConnectors={false} />);
+    // Root gets the --no-connectors class
+    expect(container.firstChild).toHaveClass('an-timeline--no-connectors');
+    // All steps get connector-none
+    const steps = document.querySelectorAll('.an-timeline__step');
+    steps.forEach((step) => {
+      expect(step).toHaveClass('an-timeline__step--connector-none');
+    });
   });
 
   it('marks active step', () => {
@@ -163,13 +176,29 @@ describe('AgentTimeline', () => {
     expect(activeStep).toHaveClass('an-timeline__step--active');
   });
 
-  it('shows step error message', () => {
+  it('shows step error message when status is error', () => {
     const steps: AgentStep[] = [
       makeStep({ id: 's1', label: 'Failed step', status: 'error', error: 'Something went wrong' }),
     ];
 
     render(<AgentTimeline steps={steps} />);
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    const errorEl = screen.getByText('Something went wrong');
+    expect(errorEl).toBeInTheDocument();
+    // Error div should be visible (no --hidden class)
+    expect(errorEl.closest('.an-timeline__step-error')).not.toHaveClass(
+      'an-timeline__step-error--hidden',
+    );
+  });
+
+  it('hides error div when status is not error', () => {
+    const steps: AgentStep[] = [
+      makeStep({ id: 's1', label: 'Running step', status: 'running', error: 'Stale error' }),
+    ];
+
+    render(<AgentTimeline steps={steps} />);
+    const errorEl = document.querySelector('.an-timeline__step-error');
+    expect(errorEl).toBeInTheDocument();
+    expect(errorEl).toHaveClass('an-timeline__step-error--hidden');
   });
 
   it('uses custom renderStepContent', () => {
@@ -207,5 +236,11 @@ describe('AgentTimeline', () => {
 
     fireEvent.keyDown(step, { key: ' ' });
     expect(onClick).toHaveBeenCalledTimes(2);
+  });
+
+  it('single step has no connector lines', () => {
+    render(<AgentTimeline steps={[makeStep({ id: 's1', label: 'Solo' })]} />);
+    const step = document.querySelector('.an-timeline__step');
+    expect(step).toHaveClass('an-timeline__step--connector-none');
   });
 });

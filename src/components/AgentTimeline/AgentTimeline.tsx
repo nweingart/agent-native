@@ -1,5 +1,5 @@
 import React from 'react';
-import type { AgentStep, StepTier, ApprovalRequest } from '../../types';
+import type { AgentStep, StepTier, ApprovalRequest, ToolCall, Artifact } from '../../types';
 import { cn } from '../../utils/cn';
 import { useAutoScroll } from '../../hooks/useAutoScroll';
 import { TimelineStep } from './TimelineStep';
@@ -7,6 +7,9 @@ import { TimelineConnector } from './TimelineConnector';
 import { TimelineTier } from './TimelineTier';
 import { TimelineApprovalGate } from './TimelineApprovalGate';
 import { TimelineSummary } from './TimelineSummary';
+import { TimelineToolCall } from './TimelineToolCall';
+import { TimelineToolCallList } from './TimelineToolCallList';
+import { TimelineArtifact } from './TimelineArtifact';
 import type { TimelineStepProps } from './TimelineStep';
 
 export interface TimelineClassNames {
@@ -30,6 +33,12 @@ export interface TimelineClassNames {
   approveButton?: string;
   /** Reject button. */
   rejectButton?: string;
+  /** Individual tool call row. */
+  toolCall?: string;
+  /** Tool call list container. */
+  toolCallList?: string;
+  /** Artifact row. */
+  artifact?: string;
 }
 
 export interface AgentTimelineProps {
@@ -55,12 +64,20 @@ export interface AgentTimelineProps {
   showConnectors?: boolean;
   /** Auto-scroll to keep latest step visible. Default: true. */
   autoScroll?: boolean;
+  /** Show tool calls within steps. Default: false. */
+  showToolCalls?: boolean;
+  /** Start tool call details expanded. Default: false. */
+  defaultToolCallsExpanded?: boolean;
   /** Custom render for step content area. */
   renderStepContent?: TimelineStepProps['renderContent'];
   /** Custom render for step indicator. */
   renderStepIndicator?: TimelineStepProps['renderIndicator'];
   /** Custom render for tier header. */
   renderTierHeader?: (tier: StepTier) => React.ReactNode;
+  /** Custom render for tool call input/output. */
+  renderToolContent?: (toolCall: ToolCall) => React.ReactNode;
+  /** Custom render for artifact content. */
+  renderArtifactContent?: (artifact: Artifact) => React.ReactNode;
   /** Class names for each internal element. Ideal for Tailwind. */
   classNames?: TimelineClassNames;
   /** Additional class name for the root element. Shortcut for classNames.root. */
@@ -83,11 +100,15 @@ export function AgentTimeline({
   onReject,
   onStepClick,
   showElapsedTime,
+  showToolCalls,
+  defaultToolCallsExpanded,
   showConnectors = true,
   autoScroll = true,
   renderStepContent,
   renderStepIndicator,
   renderTierHeader,
+  renderToolContent,
+  renderArtifactContent,
   classNames,
   className,
   stepClassName,
@@ -107,16 +128,6 @@ export function AgentTimeline({
   // Build a set of step IDs that belong to tiers for efficient lookup
   const tieredStepIds = new Set(tiers?.flatMap((t) => t.stepIds) ?? []);
 
-  // Determine connector fill based on step completion
-  const getConnectorFill = (index: number): number => {
-    if (index >= steps.length - 1) return 0;
-    const nextStep = steps[index + 1];
-    if (!nextStep) return 0;
-    if (nextStep.status === 'complete' || nextStep.status === 'error') return 100;
-    if (nextStep.status === 'running' || nextStep.status === 'streaming') return 50;
-    return 0;
-  };
-
   // Apply failedStepIds override
   const resolvedSteps = failedStepIds?.length
     ? steps.map((s) =>
@@ -126,29 +137,49 @@ export function AgentTimeline({
       )
     : steps;
 
+  // Compute flat (non-tiered) step indices for connector segment calculation
+  const flatStepIndices: number[] = [];
+  for (let i = 0; i < resolvedSteps.length; i++) {
+    if (!tieredStepIds.has(resolvedSteps[i].id)) {
+      flatStepIndices.push(i);
+    }
+  }
+
+  const getConnectorSegments = (stepIndex: number): 'both' | 'below' | 'above' | 'none' => {
+    if (!showConnectors) return 'none';
+    const flatPos = flatStepIndices.indexOf(stepIndex);
+    if (flatPos === -1) return 'none';
+    if (flatStepIndices.length <= 1) return 'none';
+    if (flatPos === 0) return 'below';
+    if (flatPos === flatStepIndices.length - 1) return 'above';
+    return 'both';
+  };
+
+  const renderStepElement = (step: AgentStep, index: number) => (
+    <TimelineStep
+      key={step.id}
+      step={step}
+      isActive={step.id === activeStepId}
+      showElapsedTime={showElapsedTime}
+      showToolCalls={showToolCalls}
+      defaultToolCallsExpanded={defaultToolCallsExpanded}
+      onClick={onStepClick}
+      className={resolvedClassNames.step}
+      indicatorClassName={resolvedClassNames.indicator}
+      bodyClassName={resolvedClassNames.stepBody}
+      renderContent={renderStepContent}
+      renderIndicator={renderStepIndicator}
+      renderToolContent={renderToolContent}
+      renderArtifactContent={renderArtifactContent}
+      connectorSegments={getConnectorSegments(index)}
+    />
+  );
+
   // Render flat list (no tiers)
   const renderFlatSteps = () =>
     resolvedSteps.map((step, i) => {
       if (tieredStepIds.has(step.id)) return null;
-
-      return (
-        <React.Fragment key={step.id}>
-          <TimelineStep
-            step={step}
-            isActive={step.id === activeStepId}
-            showElapsedTime={showElapsedTime}
-            onClick={onStepClick}
-            className={resolvedClassNames.step}
-            indicatorClassName={resolvedClassNames.indicator}
-            bodyClassName={resolvedClassNames.stepBody}
-            renderContent={renderStepContent}
-            renderIndicator={renderStepIndicator}
-          />
-          {showConnectors && i < resolvedSteps.length - 1 && (
-            <TimelineConnector fillPercent={getConnectorFill(i)} className={resolvedClassNames.connector} />
-          )}
-        </React.Fragment>
-      );
+      return renderStepElement(step, i);
     });
 
   // Build final render order: interleave flat steps and tier groups
@@ -167,48 +198,31 @@ export function AgentTimeline({
 
       if (tier) {
         renderedTiers.add(tier.id);
-        // Advance past all steps in this tier before checking for connector
+        // Advance past all steps in this tier
         const tierStepSet = new Set(tier.stepIds);
         while (i < resolvedSteps.length && tierStepSet.has(resolvedSteps[i].id)) {
           i++;
         }
         elements.push(
-          <React.Fragment key={`tier-${tier.id}`}>
-            <TimelineTier
-              tier={tier}
-              steps={resolvedSteps}
-              showElapsedTime={showElapsedTime}
-              activeStepId={activeStepId}
-              onStepClick={onStepClick}
-              classNames={resolvedClassNames}
-              renderStepContent={renderStepContent}
-              renderStepIndicator={renderStepIndicator}
-              renderTierHeader={renderTierHeader}
-            />
-            {showConnectors && i < resolvedSteps.length && (
-              <TimelineConnector className={resolvedClassNames.connector} />
-            )}
-          </React.Fragment>,
+          <TimelineTier
+            key={`tier-${tier.id}`}
+            tier={tier}
+            steps={resolvedSteps}
+            showElapsedTime={showElapsedTime}
+            showToolCalls={showToolCalls}
+            defaultToolCallsExpanded={defaultToolCallsExpanded}
+            activeStepId={activeStepId}
+            onStepClick={onStepClick}
+            classNames={resolvedClassNames}
+            renderStepContent={renderStepContent}
+            renderStepIndicator={renderStepIndicator}
+            renderTierHeader={renderTierHeader}
+            renderToolContent={renderToolContent}
+            renderArtifactContent={renderArtifactContent}
+          />,
         );
       } else {
-        elements.push(
-          <React.Fragment key={step.id}>
-            <TimelineStep
-              step={step}
-              isActive={step.id === activeStepId}
-              showElapsedTime={showElapsedTime}
-              onClick={onStepClick}
-              className={resolvedClassNames.step}
-            indicatorClassName={resolvedClassNames.indicator}
-            bodyClassName={resolvedClassNames.stepBody}
-              renderContent={renderStepContent}
-              renderIndicator={renderStepIndicator}
-            />
-            {showConnectors && i < resolvedSteps.length - 1 && (
-              <TimelineConnector fillPercent={getConnectorFill(i)} className={resolvedClassNames.connector} />
-            )}
-          </React.Fragment>,
-        );
+        elements.push(renderStepElement(step, i));
         i++;
       }
     }
@@ -217,17 +231,26 @@ export function AgentTimeline({
   };
 
   return (
-    <div ref={containerRef} className={cn('an-timeline', resolvedClassNames.root)}>
+    <div
+      ref={containerRef}
+      className={cn(
+        'an-timeline',
+        !showConnectors && 'an-timeline--no-connectors',
+        resolvedClassNames.root,
+      )}
+    >
       {renderContent()}
       {approvalRequest && (
-        <TimelineApprovalGate
-          request={approvalRequest}
-          onApprove={onApprove}
-          onReject={onReject}
-          className={resolvedClassNames.approval}
-          approveButtonClassName={resolvedClassNames.approveButton}
-          rejectButtonClassName={resolvedClassNames.rejectButton}
-        />
+        <div className="an-timeline__approval-overlay">
+          <TimelineApprovalGate
+            request={approvalRequest}
+            onApprove={onApprove}
+            onReject={onReject}
+            className={resolvedClassNames.approval}
+            approveButtonClassName={resolvedClassNames.approveButton}
+            rejectButtonClassName={resolvedClassNames.rejectButton}
+          />
+        </div>
       )}
     </div>
   );
@@ -239,3 +262,6 @@ AgentTimeline.Connector = TimelineConnector;
 AgentTimeline.Tier = TimelineTier;
 AgentTimeline.ApprovalGate = TimelineApprovalGate;
 AgentTimeline.Summary = TimelineSummary;
+AgentTimeline.ToolCall = TimelineToolCall;
+AgentTimeline.ToolCallList = TimelineToolCallList;
+AgentTimeline.Artifact = TimelineArtifact;

@@ -1,0 +1,141 @@
+@layer agent-native {
+
+/* ── CostTracker ─────────────────────────────────────────────────── */
+
+.an-cost-tracker {
+  font-family: var(--an-font-sans);
+  font-size: var(--an-font-size-base);
+  color: var(--an-text-primary);
+}
+
+/* ── Summary ─────────────────────────────────────────────────────── */
+
+.an-cost-tracker__summary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--an-space-3);
+  flex-wrap: wrap;
+  padding-bottom: var(--an-space-3);
+  border-bottom: var(--an-border-width) solid var(--an-border-color);
+  margin-bottom: var(--an-space-3);
+}
+
+.an-cost-tracker__summary-total {
+  font-size: var(--an-font-size-xl);
+  font-weight: 700;
+  font-family: var(--an-font-mono);
+}
+
+.an-cost-tracker__summary-models {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--an-space-2);
+}
+
+.an-cost-tracker__summary-model {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--an-space-1) var(--an-space-2);
+  border-radius: var(--an-radius-full);
+  background-color: var(--an-surface-2);
+  font-size: var(--an-font-size-xs);
+  font-family: var(--an-font-mono);
+  color: var(--an-text-secondary);
+  white-space: nowrap;
+}
+
+/* ── Table ───────────────────────────────────────────────────────── */
+
+.an-cost-tracker__table-wrap {
+  border: var(--an-border-width) solid var(--an-border-color);
+  border-radius: var(--an-radius-md);
+  overflow: hidden;
+}
+
+.an-cost-tracker__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--an-font-size-xs);
+}
+
+.an-cost-tracker__table-header th {
+  text-align: left;
+  padding: var(--an-space-2) var(--an-space-3);
+  font-weight: 600;
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--an-surface-1);
+  border-bottom: var(--an-border-width) solid var(--an-border-color);
+}
+
+.an-cost-tracker__group-header {
+  background-color: var(--an-surface-1);
+}
+
+.an-cost-tracker__group-label {
+  padding: var(--an-space-1) var(--an-space-3);
+  font-weight: 600;
+  font-size: var(--an-font-size-sm);
+  color: var(--an-text-secondary);
+  border-bottom: var(--an-border-width) solid var(--an-border-color);
+}
+
+.an-cost-tracker__row {
+  transition: background-color var(--an-duration-fast) var(--an-easing-default);
+}
+
+.an-cost-tracker__row:nth-child(even) {
+  background-color: var(--an-surface-1);
+}
+
+.an-cost-tracker__row--clickable {
+  cursor: pointer;
+}
+
+.an-cost-tracker__row--clickable:hover {
+  background-color: var(--an-surface-2);
+}
+
+.an-cost-tracker__row--clickable:focus-visible {
+  outline: 2px solid var(--an-status-running);
+  outline-offset: -2px;
+}
+
+.an-cost-tracker__cell {
+  padding: var(--an-space-2) var(--an-space-3);
+  border-bottom: var(--an-border-width) solid var(--an-border-color);
+}
+
+.an-cost-tracker__cell--tokens,
+.an-cost-tracker__cell--cost,
+.an-cost-tracker__cell--time {
+  font-family: var(--an-font-mono);
+  white-space: nowrap;
+}
+
+.an-cost-tracker__cell--cost {
+  font-weight: 600;
+}
+
+.an-cost-tracker__table-total td {
+  padding: var(--an-space-2) var(--an-space-3);
+  font-weight: 700;
+  background-color: var(--an-surface-2);
+  border-bottom: none;
+}
+
+.an-cost-tracker__table-total .an-cost-tracker__cell--cost {
+  font-size: var(--an-font-size-sm);
+}
+
+/* ── Reduced Motion ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .an-cost-tracker__row {
+    transition: none;
+  }
+}
+
+} /* @layer agent-native */

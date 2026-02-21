@@ -1,0 +1,131 @@
+@layer agent-native {
+
+/* ── AgentStatusBar ────────────────────────────────────────────────── */
+
+.an-status-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--an-space-3);
+  font-family: var(--an-font-sans);
+  font-size: var(--an-font-size-sm);
+  color: var(--an-text-secondary);
+  padding: var(--an-space-2) var(--an-space-3);
+  background-color: var(--an-surface-1);
+  border: var(--an-border-width) solid var(--an-border-color);
+  border-radius: var(--an-radius-md);
+}
+
+/* ── Status section ────────────────────────────────────────────────── */
+
+.an-status-bar__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--an-space-2);
+}
+
+.an-status-bar__status[role="button"] {
+  cursor: pointer;
+  border-radius: var(--an-radius-sm);
+  padding: var(--an-space-1);
+  margin: calc(var(--an-space-1) * -1);
+  transition: background-color var(--an-duration-fast) var(--an-easing-default);
+}
+
+.an-status-bar__status[role="button"]:hover {
+  background-color: var(--an-surface-2);
+}
+
+.an-status-bar__status[role="button"]:focus-visible {
+  outline: 2px solid var(--an-status-running);
+  outline-offset: 2px;
+}
+
+/* ── Status dot ────────────────────────────────────────────────────── */
+
+.an-status-bar__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--an-radius-full);
+  flex-shrink: 0;
+}
+
+.an-status-bar__dot--idle {
+  background-color: var(--an-status-pending);
+}
+
+.an-status-bar__dot--thinking {
+  background-color: var(--an-status-running);
+}
+
+.an-status-bar__dot--acting {
+  background-color: var(--an-status-streaming);
+}
+
+.an-status-bar__dot--waiting {
+  background-color: var(--an-status-warning);
+}
+
+.an-status-bar__dot--error {
+  background-color: var(--an-status-error);
+}
+
+.an-status-bar__dot--complete {
+  background-color: var(--an-status-complete);
+}
+
+.an-status-bar__dot--pulsing {
+  animation: an-status-dot-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes an-status-dot-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.75);
+  }
+}
+
+/* ── Status label ──────────────────────────────────────────────────── */
+
+.an-status-bar__status-label {
+  font-weight: 500;
+  color: var(--an-text-primary);
+}
+
+/* ── Divider ───────────────────────────────────────────────────────── */
+
+.an-status-bar__divider {
+  display: inline-block;
+  width: var(--an-border-width);
+  height: 16px;
+  background-color: var(--an-border-color);
+  flex-shrink: 0;
+}
+
+/* ── Metric sections ───────────────────────────────────────────────── */
+
+.an-status-bar__tokens,
+.an-status-bar__elapsed,
+.an-status-bar__cost,
+.an-status-bar__model {
+  white-space: nowrap;
+}
+
+.an-status-bar__model {
+  font-family: var(--an-font-mono);
+  font-size: var(--an-font-size-xs);
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .an-status-bar__dot--pulsing {
+    animation: none;
+  }
+}
+
+} /* @layer agent-native */

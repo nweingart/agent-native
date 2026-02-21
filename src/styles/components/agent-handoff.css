@@ -1,0 +1,262 @@
+@layer agent-native {
+
+/* ── AgentHandoff ─────────────────────────────────────────────────── */
+
+.an-agent-handoff {
+  display: flex;
+  font-family: var(--an-font-sans);
+  font-size: var(--an-font-size-base);
+  color: var(--an-text-primary);
+}
+
+.an-agent-handoff--vertical {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+.an-agent-handoff--horizontal {
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+}
+
+/* ── Agent Card ───────────────────────────────────────────────────── */
+
+.an-agent-handoff__agent {
+  border: var(--an-border-width) solid var(--an-border-color);
+  border-radius: var(--an-radius-md);
+  padding: var(--an-space-3);
+  background-color: var(--an-surface-0);
+  border-left: 3px solid var(--an-border-color);
+  transition:
+    border-color var(--an-duration-fast) var(--an-easing-default),
+    box-shadow var(--an-duration-fast) var(--an-easing-default),
+    background-color var(--an-duration-fast) var(--an-easing-default);
+}
+
+.an-agent-handoff__agent--idle {
+  border-left-color: var(--an-status-pending);
+}
+
+.an-agent-handoff__agent--running {
+  border-left-color: var(--an-status-running);
+}
+
+.an-agent-handoff__agent--complete {
+  border-left-color: var(--an-status-complete);
+}
+
+.an-agent-handoff__agent--error {
+  border-left-color: var(--an-status-error);
+}
+
+.an-agent-handoff__agent--active {
+  box-shadow: var(--an-glow-running);
+  border-color: var(--an-status-running);
+  border-left-color: var(--an-status-running);
+  background-color: var(--an-status-running-bg);
+}
+
+.an-agent-handoff__agent--clickable {
+  cursor: pointer;
+}
+
+.an-agent-handoff__agent--clickable:hover {
+  background-color: var(--an-surface-1);
+}
+
+.an-agent-handoff__agent--clickable:focus-visible {
+  outline: 2px solid var(--an-status-running);
+  outline-offset: 2px;
+}
+
+/* ── Agent Header ─────────────────────────────────────────────────── */
+
+.an-agent-handoff__agent-header {
+  display: flex;
+  align-items: center;
+  gap: var(--an-space-2);
+}
+
+.an-agent-handoff__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--an-radius-full);
+  flex-shrink: 0;
+}
+
+.an-agent-handoff__dot--idle {
+  background-color: var(--an-status-pending);
+}
+
+.an-agent-handoff__dot--running {
+  background-color: var(--an-status-running);
+}
+
+.an-agent-handoff__dot--complete {
+  background-color: var(--an-status-complete);
+}
+
+.an-agent-handoff__dot--error {
+  background-color: var(--an-status-error);
+}
+
+.an-agent-handoff__dot--pulsing {
+  animation: an-status-dot-pulse 1.5s ease-in-out infinite;
+}
+
+.an-agent-handoff__agent-name {
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+
+.an-agent-handoff__agent-status {
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-secondary);
+  text-transform: capitalize;
+}
+
+/* ── Agent Task ───────────────────────────────────────────────────── */
+
+.an-agent-handoff__agent-task {
+  color: var(--an-text-secondary);
+  font-size: var(--an-font-size-sm);
+  margin-top: var(--an-space-1);
+}
+
+/* ── Agent Steps ──────────────────────────────────────────────────── */
+
+.an-agent-handoff__steps {
+  margin-top: var(--an-space-2);
+  padding-top: var(--an-space-2);
+  border-top: var(--an-border-width) solid var(--an-border-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--an-space-1);
+}
+
+.an-agent-handoff__step {
+  display: flex;
+  align-items: center;
+  gap: var(--an-space-2);
+  font-size: var(--an-font-size-sm);
+}
+
+.an-agent-handoff__step-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--an-radius-full);
+  flex-shrink: 0;
+}
+
+.an-agent-handoff__step-dot--pending { background-color: var(--an-status-pending); }
+.an-agent-handoff__step-dot--running { background-color: var(--an-status-running); }
+.an-agent-handoff__step-dot--streaming { background-color: var(--an-status-streaming); }
+.an-agent-handoff__step-dot--complete { background-color: var(--an-status-complete); }
+.an-agent-handoff__step-dot--error { background-color: var(--an-status-error); }
+.an-agent-handoff__step-dot--skipped { background-color: var(--an-status-skipped); }
+.an-agent-handoff__step-dot--cancelled { background-color: var(--an-status-cancelled); }
+.an-agent-handoff__step-dot--waiting_approval { background-color: var(--an-status-approval); }
+
+.an-agent-handoff__step-label {
+  color: var(--an-text-secondary);
+}
+
+/* ── Handoff Arrow — Vertical ─────────────────────────────────────── */
+
+.an-agent-handoff__arrow {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.an-agent-handoff__arrow--vertical {
+  flex-direction: column;
+  align-items: center;
+  padding: var(--an-space-2) 0;
+  min-height: 32px;
+}
+
+.an-agent-handoff__arrow--vertical .an-agent-handoff__arrow-line {
+  width: 2px;
+  flex: 1;
+  min-height: 8px;
+  background-color: var(--an-border-color);
+}
+
+.an-agent-handoff__arrow--vertical .an-agent-handoff__arrow-head {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--an-border-color);
+}
+
+.an-agent-handoff__arrow--vertical .an-agent-handoff__arrow-label {
+  position: absolute;
+  left: calc(50% + var(--an-space-3));
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-tertiary);
+  white-space: nowrap;
+}
+
+/* ── Handoff Arrow — Horizontal ───────────────────────────────────── */
+
+.an-agent-handoff__arrow--horizontal {
+  flex-direction: row;
+  align-items: center;
+  padding: 0 var(--an-space-2);
+  min-width: 32px;
+}
+
+.an-agent-handoff__arrow--horizontal .an-agent-handoff__arrow-line {
+  height: 2px;
+  flex: 1;
+  min-width: 8px;
+  background-color: var(--an-border-color);
+}
+
+.an-agent-handoff__arrow--horizontal .an-agent-handoff__arrow-head {
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid var(--an-border-color);
+}
+
+.an-agent-handoff__arrow--horizontal .an-agent-handoff__arrow-label {
+  position: absolute;
+  top: calc(50% + var(--an-space-2));
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--an-font-size-xs);
+  color: var(--an-text-tertiary);
+  white-space: nowrap;
+}
+
+/* ── Horizontal layout sizing ─────────────────────────────────────── */
+
+.an-agent-handoff--horizontal .an-agent-handoff__agent {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Reduced Motion ───────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .an-agent-handoff__dot--pulsing {
+    animation: none;
+  }
+
+  .an-agent-handoff__agent {
+    transition: none;
+  }
+}
+
+} /* @layer agent-native */

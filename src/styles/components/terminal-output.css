@@ -1,0 +1,222 @@
+@layer agent-native {
+
+/* ── TerminalOutput ───────────────────────────────────────────────── */
+/* Terminal always renders with dark styling regardless of theme.      */
+
+.an-terminal {
+  --_term-bg: #1a1b1e;
+  --_term-fg: #e9ecef;
+  --_term-fg-dim: #909296;
+  --_term-border: #373a40;
+
+  font-family: var(--an-font-mono);
+  font-size: var(--an-font-size-xs);
+  color: var(--_term-fg);
+  background-color: var(--_term-bg);
+  border: var(--an-border-width) solid var(--_term-border);
+  border-radius: var(--an-radius-md);
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+
+.an-terminal__header {
+  display: flex;
+  align-items: center;
+  gap: var(--an-space-3);
+  padding: var(--an-space-2) var(--an-space-3);
+  border-bottom: var(--an-border-width) solid var(--_term-border);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.an-terminal__title {
+  font-weight: 500;
+  color: var(--_term-fg);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.an-terminal__exit-code {
+  flex-shrink: 0;
+  padding: 0 var(--an-space-2);
+  border-radius: var(--an-radius-full);
+  font-size: var(--an-font-size-xs);
+  font-weight: 500;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.an-terminal__exit-code--success {
+  background-color: rgba(46, 160, 67, 0.2);
+  color: #3fb950;
+}
+
+.an-terminal__exit-code--error {
+  background-color: rgba(248, 81, 73, 0.2);
+  color: #f85149;
+}
+
+.an-terminal__streaming-badge {
+  flex-shrink: 0;
+  padding: 0 var(--an-space-2);
+  border-radius: var(--an-radius-full);
+  font-size: var(--an-font-size-xs);
+  font-weight: 500;
+  line-height: 1.6;
+  background-color: rgba(51, 154, 240, 0.2);
+  color: #339af0;
+  animation: an-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── Body ─────────────────────────────────────────────────────────── */
+
+.an-terminal__body {
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: var(--an-space-2) 0;
+}
+
+/* ── Line ─────────────────────────────────────────────────────────── */
+
+.an-terminal__line {
+  display: flex;
+  align-items: flex-start;
+  min-height: 1.4em;
+  line-height: 1.4;
+  padding: 0 var(--an-space-3);
+}
+
+.an-terminal__line:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.an-terminal__line-number {
+  display: inline-block;
+  min-width: 3em;
+  padding-right: var(--an-space-2);
+  text-align: right;
+  color: var(--_term-fg-dim);
+  user-select: none;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.an-terminal__line-content {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ── Streaming Cursor ─────────────────────────────────────────────── */
+
+.an-terminal__cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.1em;
+  background-color: var(--_term-fg);
+  margin-left: var(--an-space-3);
+  margin-bottom: var(--an-space-1);
+  vertical-align: text-bottom;
+  animation: an-terminal-blink 1s step-end infinite;
+}
+
+@keyframes an-terminal-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── Collapsible (details/summary) ────────────────────────────────── */
+
+.an-terminal__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--an-space-3);
+  padding: var(--an-space-2) var(--an-space-3);
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  list-style: none;
+}
+
+.an-terminal__summary::-webkit-details-marker {
+  display: none;
+}
+
+.an-terminal__summary::before {
+  content: '\25B6';
+  display: inline-block;
+  font-size: 0.6em;
+  transition: transform var(--an-duration-fast) var(--an-easing-default);
+}
+
+.an-terminal[open] > .an-terminal__summary::before {
+  transform: rotate(90deg);
+}
+
+/* ── ANSI Color Classes ───────────────────────────────────────────── */
+
+.an-terminal__ansi--bold { font-weight: 700; }
+.an-terminal__ansi--dim { opacity: 0.6; }
+.an-terminal__ansi--italic { font-style: italic; }
+.an-terminal__ansi--underline { text-decoration: underline; }
+
+/* Foreground colors */
+.an-terminal__ansi--black { color: #555; }
+.an-terminal__ansi--red { color: #f85149; }
+.an-terminal__ansi--green { color: #3fb950; }
+.an-terminal__ansi--yellow { color: #d29922; }
+.an-terminal__ansi--blue { color: #58a6ff; }
+.an-terminal__ansi--magenta { color: #bc8cff; }
+.an-terminal__ansi--cyan { color: #39c5cf; }
+.an-terminal__ansi--white { color: #e6edf3; }
+
+.an-terminal__ansi--bright-black { color: #6e7681; }
+.an-terminal__ansi--bright-red { color: #ff7b72; }
+.an-terminal__ansi--bright-green { color: #56d364; }
+.an-terminal__ansi--bright-yellow { color: #e3b341; }
+.an-terminal__ansi--bright-blue { color: #79c0ff; }
+.an-terminal__ansi--bright-magenta { color: #d2a8ff; }
+.an-terminal__ansi--bright-cyan { color: #56d4dd; }
+.an-terminal__ansi--bright-white { color: #ffffff; }
+
+/* Background colors */
+.an-terminal__ansi-bg--black { background-color: #555; }
+.an-terminal__ansi-bg--red { background-color: rgba(248, 81, 73, 0.3); }
+.an-terminal__ansi-bg--green { background-color: rgba(63, 185, 80, 0.3); }
+.an-terminal__ansi-bg--yellow { background-color: rgba(210, 153, 34, 0.3); }
+.an-terminal__ansi-bg--blue { background-color: rgba(88, 166, 255, 0.3); }
+.an-terminal__ansi-bg--magenta { background-color: rgba(188, 140, 255, 0.3); }
+.an-terminal__ansi-bg--cyan { background-color: rgba(57, 197, 207, 0.3); }
+.an-terminal__ansi-bg--white { background-color: rgba(230, 237, 243, 0.2); }
+
+.an-terminal__ansi-bg--bright-black { background-color: rgba(110, 118, 129, 0.3); }
+.an-terminal__ansi-bg--bright-red { background-color: rgba(255, 123, 114, 0.3); }
+.an-terminal__ansi-bg--bright-green { background-color: rgba(86, 211, 100, 0.3); }
+.an-terminal__ansi-bg--bright-yellow { background-color: rgba(227, 179, 65, 0.3); }
+.an-terminal__ansi-bg--bright-blue { background-color: rgba(121, 192, 255, 0.3); }
+.an-terminal__ansi-bg--bright-magenta { background-color: rgba(210, 168, 255, 0.3); }
+.an-terminal__ansi-bg--bright-cyan { background-color: rgba(86, 212, 221, 0.3); }
+.an-terminal__ansi-bg--bright-white { background-color: rgba(255, 255, 255, 0.2); }
+
+/* ── Reduced Motion ───────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .an-terminal__cursor {
+    animation: none;
+    opacity: 1;
+  }
+
+  .an-terminal__streaming-badge {
+    animation: none;
+  }
+
+  .an-terminal__summary::before {
+    transition: none;
+  }
+}
+
+} /* @layer agent-native */

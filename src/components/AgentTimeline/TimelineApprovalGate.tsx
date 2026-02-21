@@ -26,24 +26,20 @@ export function TimelineApprovalGate({
         <div className="an-timeline__approval-description">{request.description}</div>
       )}
       <div className="an-timeline__approval-actions">
-        {onApprove && (
-          <button
-            type="button"
-            className={cn('an-timeline__approval-btn an-timeline__approval-btn--approve', approveButtonClassName)}
-            onClick={() => onApprove(request)}
-          >
-            Approve
-          </button>
-        )}
-        {onReject && (
-          <button
-            type="button"
-            className={cn('an-timeline__approval-btn an-timeline__approval-btn--reject', rejectButtonClassName)}
-            onClick={() => onReject(request)}
-          >
-            Reject
-          </button>
-        )}
+        <button
+          type="button"
+          className={cn('an-timeline__approval-btn an-timeline__approval-btn--approve', approveButtonClassName)}
+          onClick={onApprove ? () => onApprove(request) : undefined}
+        >
+          Approve
+        </button>
+        <button
+          type="button"
+          className={cn('an-timeline__approval-btn an-timeline__approval-btn--reject', rejectButtonClassName)}
+          onClick={onReject ? () => onReject(request) : undefined}
+        >
+          Reject
+        </button>
       </div>
     </div>
   );
