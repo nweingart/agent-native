@@ -29,9 +29,6 @@ export function TimelineToolCallList({
   const toolCallCount = toolCalls?.length ?? 0;
   const artifactCount = artifacts?.length ?? 0;
   const totalCount = toolCallCount + artifactCount;
-
-  if (totalCount === 0) return null;
-
   const hasRunning = toolCalls?.some((tc) => tc.status === 'running') ?? false;
 
   // Auto-expand when a tool call is running
@@ -40,6 +37,8 @@ export function TimelineToolCallList({
       detailsRef.current.open = true;
     }
   }, [hasRunning]);
+
+  if (totalCount === 0) return null;
 
   const summaryParts: string[] = [];
   if (toolCallCount > 0) {
