@@ -62,7 +62,7 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
   const headersRef = useRef(headers);
-  headersRef.current = headers;
+  useEffect(() => { headersRef.current = headers; });
 
   const cleanup = useCallback(() => {
     if (abortRef.current) {
