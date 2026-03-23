@@ -61,6 +61,8 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
   const abortRef = useRef<AbortController | null>(null);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  const headersRef = useRef(headers);
+  headersRef.current = headers;
 
   const cleanup = useCallback(() => {
     if (abortRef.current) {
@@ -87,7 +89,7 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
       const response = await fetch(url, {
         headers: {
           Accept: 'application/x-ndjson',
-          ...headers,
+          ...headersRef.current,
         },
         signal: controller.signal,
       });
@@ -150,7 +152,7 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
         onError?.(streamError);
       }
     }
-  }, [url, headers, cleanup, dispatch, onOpen, onClose, onError]);
+  }, [url, cleanup, dispatch, onOpen, onClose, onError]);
 
   const scheduleReconnect = useCallback(() => {
     if (!shouldReconnect || !mountedRef.current) return;
