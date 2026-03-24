@@ -35,16 +35,23 @@ export function useStreamingText(
     }
   }, []);
 
-  // When content grows, keep charIndex where it is so the animation can
-  // catch up. When content shrinks (reset), snap charIndex to 0.
+  // When transitioning from non-animated to animated, sync charIndex to
+  // current content length so we don't use a stale value.
+  const prevAnimatedRef = useRef(animated);
   useEffect(() => {
-    if (!animated) {
-      return;
+    if (animated && !prevAnimatedRef.current) {
+      setCharIndex(content.length);
     }
+    prevAnimatedRef.current = animated;
+  }, [animated, content.length]);
+
+  // When content shrinks (reset) while animated, snap charIndex down.
+  useEffect(() => {
+    if (!animated) return;
     if (content.length < charIndex) {
       setCharIndex(content.length);
     }
-  }, [content, charIndex, animated]);
+  }, [content.length, charIndex, animated]);
 
   useEffect(() => {
     if (!animated) {
