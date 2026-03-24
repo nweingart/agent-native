@@ -22,13 +22,8 @@ export function useStreamingText(
   options: UseStreamingTextOptions = {},
 ): UseStreamingTextReturn {
   const { typingSpeed } = options;
+  const animated = typingSpeed !== undefined;
 
-  // Instant mode — no animation
-  if (typingSpeed === undefined) {
-    return { displayedText: content, isTyping: false };
-  }
-
-  /* eslint-disable react-hooks/rules-of-hooks */
   const [charIndex, setCharIndex] = useState(content.length);
   const rafRef = useRef<number | null>(null);
   const lastTickRef = useRef<number>(0);
@@ -43,18 +38,20 @@ export function useStreamingText(
   // When content grows, keep charIndex where it is so the animation can
   // catch up. When content shrinks (reset), snap charIndex to 0.
   useEffect(() => {
+    if (!animated) return;
     if (content.length < charIndex) {
       setCharIndex(content.length);
     }
-  }, [content, charIndex]);
+  }, [animated, content, charIndex]);
 
   useEffect(() => {
+    if (!animated) return;
     if (charIndex >= content.length) {
       cancelAnimation();
       return;
     }
 
-    const charsPerMs = typingSpeed / 1000;
+    const charsPerMs = (typingSpeed ?? 0) / 1000;
 
     const tick = (now: number) => {
       if (lastTickRef.current === 0) {
@@ -76,16 +73,18 @@ export function useStreamingText(
     rafRef.current = requestAnimationFrame(tick);
 
     return cancelAnimation;
-  }, [content, charIndex, typingSpeed, cancelAnimation]);
+  }, [animated, content, charIndex, typingSpeed, cancelAnimation]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return cancelAnimation;
   }, [cancelAnimation]);
+
+  if (!animated) {
+    return { displayedText: content, isTyping: false };
+  }
 
   const displayedText = content.slice(0, charIndex);
   const isTyping = charIndex < content.length;
 
   return { displayedText, isTyping };
-  /* eslint-enable react-hooks/rules-of-hooks */
 }
