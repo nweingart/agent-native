@@ -61,6 +61,15 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
   const abortRef = useRef<AbortController | null>(null);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  const headersRef = useRef(headers);
+  const onOpenRef = useRef(onOpen);
+  const onCloseRef = useRef(onClose);
+  const onErrorRef = useRef(onError);
+
+  headersRef.current = headers;
+  onOpenRef.current = onOpen;
+  onCloseRef.current = onClose;
+  onErrorRef.current = onError;
 
   const cleanup = useCallback(() => {
     if (abortRef.current) {
@@ -87,7 +96,7 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
       const response = await fetch(url, {
         headers: {
           Accept: 'application/x-ndjson',
-          ...headers,
+          ...headersRef.current,
         },
         signal: controller.signal,
       });
@@ -102,7 +111,7 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
 
       if (mountedRef.current) {
         setStatus('open');
-        onOpen?.();
+        onOpenRef.current?.();
       }
 
       const reader = response.body.getReader();
@@ -138,7 +147,7 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
       // Stream ended normally
       if (mountedRef.current) {
         setStatus('closed');
-        onClose?.();
+        onCloseRef.current?.();
       }
     } catch (err) {
       if (controller.signal.aborted) return;
@@ -147,10 +156,10 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
       if (mountedRef.current) {
         setStatus('error');
         setError(streamError);
-        onError?.(streamError);
+        onErrorRef.current?.(streamError);
       }
     }
-  }, [url, headers, cleanup, dispatch, onOpen, onClose, onError]);
+  }, [url, cleanup, dispatch]);
 
   const scheduleReconnect = useCallback(() => {
     if (!shouldReconnect || !mountedRef.current) return;
