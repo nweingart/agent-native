@@ -42,15 +42,17 @@ export function useStreamingText(
     if (animated && !prevAnimatedRef.current) {
       setCharIndex(content.length);
     }
+    if (!animated && prevAnimatedRef.current) {
+      cancelAnimation();
+    }
     prevAnimatedRef.current = animated;
-  }, [animated, content.length]);
+  }, [animated, content.length, cancelAnimation]);
 
   // When content shrinks (reset) while animated, snap charIndex down.
   useEffect(() => {
     if (!animated) return;
-    if (content.length < charIndex) {
-      setCharIndex(content.length);
-    }
+    if (content.length >= charIndex) return;
+    setCharIndex(content.length);
   }, [content.length, charIndex, animated]);
 
   useEffect(() => {
