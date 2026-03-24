@@ -33,6 +33,7 @@ describe('useVisualMemory', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   function flushRaf(time: number) {

@@ -39,6 +39,7 @@ describe('useStreamingText', () => {
 
     afterEach(() => {
       vi.restoreAllMocks();
+      vi.unstubAllGlobals();
     });
 
     function flushRaf(time: number) {

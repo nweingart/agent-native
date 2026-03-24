@@ -38,6 +38,7 @@ function mockFetchError(status: number, statusText: string) {
 describe('useAgentStream', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('connects and parses NDJSON events', async () => {
