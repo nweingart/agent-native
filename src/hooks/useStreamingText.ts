@@ -51,7 +51,7 @@ export function useStreamingText(
       return;
     }
 
-    const charsPerMs = typingSpeed! / 1000;
+    const charsPerMs = (typingSpeed ?? 0) / 1000;
 
     const tick = (now: number) => {
       if (lastTickRef.current === 0) {
