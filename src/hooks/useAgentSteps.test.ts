@@ -151,7 +151,7 @@ describe('useAgentSteps', () => {
   });
 
   it('handles artifact.added', () => {
-    const artifact: Artifact = { id: 'art1', kind: 'code', content: 'console.log()' };
+    const artifact: Artifact = { id: 'art1', kind: 'code', content: 'print()' };
     const { result } = renderHook(() => useAgentSteps());
     dispatchEvents(result.current.dispatch, [
       { type: 'step.started', step: { id: 's1', label: 'Step 1' } },
