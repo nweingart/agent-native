@@ -32,7 +32,7 @@ export function ThinkingIndicator({
     return null;
   }
 
-  const entering = current && !isTransitioning;
+  const entering = current && isTransitioning;
   const exiting = !current && isTransitioning;
 
   return (
