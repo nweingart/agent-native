@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, type MutableRefObject } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, type MutableRefObject } from 'react';
 import type { AgentEvent, ApprovalRequest } from '../types';
 import type { AgentTimelineProps } from '../components/AgentTimeline/AgentTimeline';
 import { useAgentSteps } from './useAgentSteps';
@@ -42,8 +42,14 @@ function cleanupConnection(
   abortRef: MutableRefObject<AbortController | null>,
   timerRef: MutableRefObject<ReturnType<typeof setTimeout> | null>,
 ): void {
-  if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
-  if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+  if (abortRef.current) {
+    abortRef.current.abort();
+    abortRef.current = null;
+  }
+  if (timerRef.current) {
+    clearTimeout(timerRef.current);
+    timerRef.current = null;
+  }
 }
 
 async function parseNdjsonStream(
@@ -149,7 +155,9 @@ function useStreamConnection(opts: StreamConnectionOptions) {
     if (!shouldReconnect || !refs.mounted.current) return;
     setReconnectCount((prev) => {
       if (prev >= maxReconnects) return prev;
-      timerRef.current = setTimeout(() => { if (refs.mounted.current) connect(); }, reconnectInterval);
+      timerRef.current = setTimeout(() => {
+        if (refs.mounted.current) connect();
+      }, reconnectInterval);
       return prev + 1;
     });
   }, [shouldReconnect, maxReconnects, reconnectInterval, connect, refs]);
@@ -158,18 +166,34 @@ function useStreamConnection(opts: StreamConnectionOptions) {
     if (status === 'error' && reconnectCount < maxReconnects) scheduleReconnect();
   }, [status, reconnectCount, maxReconnects, scheduleReconnect]);
   useEffect(() => {
-    if (enabled) { setReconnectCount(0); connect(); } else { cleanup(); setStatus('closed'); }
+    if (enabled) {
+      setReconnectCount(0);
+      connect();
+    } else {
+      cleanup();
+      setStatus('closed');
+    }
     return cleanup;
   }, [enabled, url]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     refs.mounted.current = true;
-    return () => { refs.mounted.current = false; cleanup(); };
+    return () => {
+      refs.mounted.current = false;
+      cleanup();
+    };
   }, [cleanup, refs]);
 
   return {
     status, error, reconnectCount,
-    disconnect: useCallback(() => { cleanup(); setStatus('closed'); }, [cleanup]),
-    reconnect: useCallback(() => { setReconnectCount(0); connect(); }, [connect]),
+    disconnect: useCallback(() => {
+      cleanup();
+      setStatus('closed');
+    }, [cleanup]),
+    reconnect: useCallback(() => {
+      setReconnectCount(0);
+      connect();
+    }, [connect]),
   };
 }
 
@@ -189,10 +213,12 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
   const onOpenRef = useRef(onOpen);
   const onCloseRef = useRef(onClose);
   const onErrorRef = useRef(onError);
-  headersRef.current = headers;
-  onOpenRef.current = onOpen;
-  onCloseRef.current = onClose;
-  onErrorRef.current = onError;
+  useLayoutEffect(() => {
+    headersRef.current = headers;
+    onOpenRef.current = onOpen;
+    onCloseRef.current = onClose;
+    onErrorRef.current = onError;
+  });
 
   const refs = useRef<StreamRefs>({
     mounted: mountedRef, headers: headersRef,
