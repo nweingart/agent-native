@@ -3,6 +3,31 @@ import type { AgentEvent, ApprovalRequest } from '../types';
 import type { AgentTimelineProps } from '../components/AgentTimeline/AgentTimeline';
 import { useAgentSteps } from './useAgentSteps';
 
+const VALID_EVENT_TYPES: ReadonlySet<string> = new Set([
+  'step.started',
+  'step.updated',
+  'step.completed',
+  'tool.started',
+  'tool.updated',
+  'tool.completed',
+  'tier.started',
+  'tier.completed',
+  'approval.requested',
+  'approval.resolved',
+  'artifact.added',
+  'reset',
+]);
+
+function isValidAgentEvent(value: unknown): value is AgentEvent {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    typeof (value as Record<string, unknown>).type === 'string' &&
+    VALID_EVENT_TYPES.has((value as Record<string, unknown>).type as string)
+  );
+}
+
 export interface UseAgentStreamOptions {
   url: string;
   headers?: Record<string, string>;
@@ -125,9 +150,10 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
           if (!trimmed) continue;
 
           try {
-            const event = JSON.parse(trimmed) as AgentEvent;
+            const parsed: unknown = JSON.parse(trimmed);
+            if (!isValidAgentEvent(parsed)) continue;
             if (mountedRef.current) {
-              dispatch(event);
+              dispatch(parsed);
             }
           } catch {
             // Skip malformed lines
