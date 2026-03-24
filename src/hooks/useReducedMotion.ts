@@ -13,7 +13,9 @@ export function useReducedMotion(): boolean {
   });
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const mql = window.matchMedia(QUERY);
+    setPrefersReduced(mql.matches);
     const handler = (e: MediaQueryListEvent) => setPrefersReduced(e.matches);
     mql.addEventListener('change', handler);
     return () => mql.removeEventListener('change', handler);
