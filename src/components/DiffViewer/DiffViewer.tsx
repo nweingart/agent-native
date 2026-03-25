@@ -1,6 +1,5 @@
 import { cn } from '../../utils/cn';
 import type { DiffFile, DiffHunk, DiffLine } from '../../types';
-
 export interface DiffViewerClassNames {
   root?: string;
   header?: string;
@@ -25,8 +24,6 @@ export interface DiffViewerProps {
   showLineNumbers?: boolean;
   /** Show file header with path and status badge. Default: true. */
   showHeader?: boolean;
-  /** Hunk indices to auto-expand (for collapsing large diffs). */
-  expandedHunks?: string[];
   /** Optional max height for scroll container. */
   maxHeight?: number | string;
   /** Callback when a line is clicked. */
@@ -36,10 +33,7 @@ export interface DiffViewerProps {
 }
 
 const STATUS_LABELS: Record<DiffFile['status'], string> = {
-  added: 'Added',
-  modified: 'Modified',
-  deleted: 'Deleted',
-  renamed: 'Renamed',
+  added: 'Added', modified: 'Modified', deleted: 'Deleted', renamed: 'Renamed',
 };
 
 function getFilePath(file: DiffFile): string {
@@ -48,8 +42,6 @@ function getFilePath(file: DiffFile): string {
   }
   return file.newPath || file.oldPath;
 }
-
-// ── Unified View ────────────────────────────────────────────────────
 
 function UnifiedHunk({
   hunk,
@@ -114,10 +106,7 @@ function UnifiedHunk({
                 </span>
               </>
             )}
-            <span
-              className={cn('an-diff-viewer__line-prefix')}
-              role="cell"
-            >
+            <span className={cn('an-diff-viewer__line-prefix')} role="cell">
               {line.type === 'add' ? '+' : line.type === 'remove' ? '-' : ' '}
             </span>
             <span
@@ -132,8 +121,6 @@ function UnifiedHunk({
     </div>
   );
 }
-
-// ── Split View ──────────────────────────────────────────────────────
 
 function SplitHunk({
   hunk,
@@ -249,8 +236,6 @@ function SplitHunk({
     </div>
   );
 }
-
-// ── Main Component ──────────────────────────────────────────────────
 
 export function DiffViewer({
   file,
