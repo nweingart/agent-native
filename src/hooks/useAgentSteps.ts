@@ -21,6 +21,28 @@ export interface UseAgentStepsReturn extends AgentStepsState {
   reset: () => void;
 }
 
+const STEP_UPDATABLE_FIELDS: ReadonlySet<string> = new Set([
+  'label', 'description', 'status', 'startedAt', 'completedAt',
+  'tokenUsage', 'error', 'metadata',
+]);
+
+const TOOL_UPDATABLE_FIELDS: ReadonlySet<string> = new Set([
+  'input', 'output', 'status', 'startedAt', 'completedAt', 'error',
+]);
+
+function pickAllowed<T extends Record<string, unknown>>(
+  fields: Record<string, unknown>,
+  allowed: ReadonlySet<string>,
+): Partial<T> {
+  const result: Record<string, unknown> = {};
+  for (const key of Object.keys(fields)) {
+    if (allowed.has(key)) {
+      result[key] = fields[key];
+    }
+  }
+  return result as Partial<T>;
+}
+
 const INITIAL_STATE: AgentStepsState = {
   steps: [],
   tiers: [],
@@ -49,7 +71,10 @@ function reducer(state: AgentStepsState, event: AgentEvent): AgentStepsState {
     case 'step.updated':
       return {
         ...state,
-        steps: updateStep(state.steps, event.stepId, (s) => ({ ...s, ...event.fields })),
+        steps: updateStep(state.steps, event.stepId, (s) => ({
+          ...s,
+          ...pickAllowed<AgentStep>(event.fields, STEP_UPDATABLE_FIELDS),
+        })),
       };
 
     case 'step.completed':
@@ -81,7 +106,10 @@ function reducer(state: AgentStepsState, event: AgentEvent): AgentStepsState {
         steps: updateStep(state.steps, event.stepId, (s) => ({
           ...s,
           toolCalls: s.toolCalls
-            ? updateToolCall(s.toolCalls, event.toolCallId, (tc) => ({ ...tc, ...event.fields }))
+            ? updateToolCall(s.toolCalls, event.toolCallId, (tc) => ({
+                ...tc,
+                ...pickAllowed<ToolCall>(event.fields, TOOL_UPDATABLE_FIELDS),
+              }))
             : s.toolCalls,
         })),
       };
