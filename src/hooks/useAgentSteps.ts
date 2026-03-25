@@ -21,13 +21,26 @@ export interface UseAgentStepsReturn extends AgentStepsState {
   reset: () => void;
 }
 
+const STEP_ALLOWED_FIELDS: ReadonlySet<string> = new Set([
+  'id', 'label', 'description', 'status', 'startedAt', 'completedAt',
+  'toolCalls', 'artifacts', 'tokenUsage', 'error', 'metadata',
+]);
+
 const STEP_UPDATABLE_FIELDS: ReadonlySet<string> = new Set([
   'label', 'description', 'status', 'startedAt', 'completedAt',
   'tokenUsage', 'error', 'metadata',
 ]);
 
+const TOOL_ALLOWED_FIELDS: ReadonlySet<string> = new Set([
+  'id', 'name', 'input', 'output', 'status', 'startedAt', 'completedAt', 'error',
+]);
+
 const TOOL_UPDATABLE_FIELDS: ReadonlySet<string> = new Set([
   'input', 'output', 'status', 'startedAt', 'completedAt', 'error',
+]);
+
+const TIER_ALLOWED_FIELDS: ReadonlySet<string> = new Set([
+  'id', 'label', 'stepIds', 'startedAt', 'completedAt',
 ]);
 
 function pickAllowed<T extends Record<string, unknown>>(
@@ -58,7 +71,7 @@ function updateToolCall(toolCalls: ToolCall[], toolCallId: string, updater: (tc:
 }
 
 function handleStepStarted(state: AgentStepsState, event: Extract<AgentEvent, { type: 'step.started' }>): AgentStepsState {
-  const newStep: AgentStep = { status: 'running', startedAt: Date.now(), ...event.step };
+  const newStep: AgentStep = { status: 'running', startedAt: Date.now(), ...pickAllowed<AgentStep>(event.step, STEP_ALLOWED_FIELDS) };
   return { ...state, steps: [...state.steps, newStep] };
 }
 
@@ -91,7 +104,7 @@ function handleToolStarted(state: AgentStepsState, event: Extract<AgentEvent, { 
       ...s,
       toolCalls: [
         ...(s.toolCalls ?? []),
-        { status: 'running' as const, startedAt: Date.now(), ...event.toolCall },
+        { status: 'running' as const, startedAt: Date.now(), ...pickAllowed<ToolCall>(event.toolCall, TOOL_ALLOWED_FIELDS) },
       ],
     })),
   };
@@ -149,7 +162,7 @@ function reducer(state: AgentStepsState, event: AgentEvent): AgentStepsState {
     case 'tool.updated': return handleToolUpdated(state, event);
     case 'tool.completed': return handleToolCompleted(state, event);
     case 'tier.started': {
-      const newTier: StepTier = { startedAt: Date.now(), ...event.tier };
+      const newTier: StepTier = { startedAt: Date.now(), ...pickAllowed<StepTier>(event.tier, TIER_ALLOWED_FIELDS) };
       return { ...state, tiers: [...state.tiers, newTier] };
     }
     case 'tier.completed':
