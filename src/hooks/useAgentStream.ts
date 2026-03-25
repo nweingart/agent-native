@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, type MutableRefObject } from 'react';
 import type { AgentEvent, ApprovalRequest } from '../types';
 import type { AgentTimelineProps } from '../components/AgentTimeline/AgentTimeline';
 import { useAgentSteps } from './useAgentSteps';
@@ -30,152 +30,141 @@ export interface UseAgentStreamReturn {
   reconnect: () => void;
 }
 
-export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamReturn {
-  const {
-    url,
-    headers,
-    enabled = true,
-    reconnect: shouldReconnect = true,
-    reconnectInterval = 3000,
-    maxReconnects = 5,
-    onApprove,
-    onReject,
-    showElapsedTime,
-    showToolCalls,
-    onError,
-    onOpen,
-    onClose,
-  } = options;
+interface StreamRefs {
+  mounted: MutableRefObject<boolean>;
+  headers: MutableRefObject<Record<string, string> | undefined>;
+  onOpen: MutableRefObject<(() => void) | undefined>;
+  onClose: MutableRefObject<(() => void) | undefined>;
+  onError: MutableRefObject<((error: Error) => void) | undefined>;
+}
 
-  const { dispatch, props, reset } = useAgentSteps({
-    onApprove,
-    onReject,
-    showElapsedTime,
-    showToolCalls,
-  });
+function cleanupConnection(
+  abortRef: MutableRefObject<AbortController | null>,
+  timerRef: MutableRefObject<ReturnType<typeof setTimeout> | null>,
+): void {
+  if (abortRef.current) {
+    abortRef.current.abort();
+    abortRef.current = null;
+  }
+  if (timerRef.current) {
+    clearTimeout(timerRef.current);
+    timerRef.current = null;
+  }
+}
 
+async function parseNdjsonStream(
+  body: ReadableStream<Uint8Array>,
+  dispatch: (event: AgentEvent) => void,
+  mountedRef: MutableRefObject<boolean>,
+): Promise<void> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      try {
+        const event = JSON.parse(trimmed) as AgentEvent;
+        if (mountedRef.current) dispatch(event);
+      } catch {
+        // Skip malformed lines
+      }
+    }
+  }
+}
+
+async function connectStream(
+  url: string,
+  controller: AbortController,
+  dispatch: (event: AgentEvent) => void,
+  refs: StreamRefs,
+  setStatus: (s: StreamStatus) => void,
+  setError: (e: Error | null) => void,
+): Promise<void> {
+  setStatus('connecting');
+  setError(null);
+
+  try {
+    const response = await fetch(url, {
+      headers: { Accept: 'application/x-ndjson', ...refs.headers.current },
+      signal: controller.signal,
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    if (!response.body) throw new Error('Response body is null');
+
+    if (refs.mounted.current) {
+      setStatus('open');
+      refs.onOpen.current?.();
+    }
+
+    await parseNdjsonStream(response.body, dispatch, refs.mounted);
+
+    if (refs.mounted.current) {
+      setStatus('closed');
+      refs.onClose.current?.();
+    }
+  } catch (err) {
+    if (controller.signal.aborted) return;
+    const streamError = err instanceof Error ? err : new Error(String(err));
+    if (refs.mounted.current) {
+      setStatus('error');
+      setError(streamError);
+      refs.onError.current?.(streamError);
+    }
+  }
+}
+
+interface StreamConnectionOptions {
+  url: string;
+  enabled: boolean;
+  shouldReconnect: boolean;
+  reconnectInterval: number;
+  maxReconnects: number;
+  dispatch: (event: AgentEvent) => void;
+  refs: StreamRefs;
+}
+
+function useStreamConnection(opts: StreamConnectionOptions) {
+  const { url, enabled, shouldReconnect, reconnectInterval, maxReconnects, dispatch, refs } = opts;
   const [status, setStatus] = useState<StreamStatus>('closed');
   const [error, setError] = useState<Error | null>(null);
   const [reconnectCount, setReconnectCount] = useState(0);
-
   const abortRef = useRef<AbortController | null>(null);
-  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mountedRef = useRef(true);
-
-  const cleanup = useCallback(() => {
-    if (abortRef.current) {
-      abortRef.current.abort();
-      abortRef.current = null;
-    }
-    if (reconnectTimerRef.current) {
-      clearTimeout(reconnectTimerRef.current);
-      reconnectTimerRef.current = null;
-    }
-  }, []);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cleanup = useCallback(() => cleanupConnection(abortRef, timerRef), []);
 
   const connect = useCallback(async () => {
     cleanup();
-
-    if (!mountedRef.current) return;
-
+    if (!refs.mounted.current) return;
     const controller = new AbortController();
     abortRef.current = controller;
-    setStatus('connecting');
-    setError(null);
-
-    try {
-      const response = await fetch(url, {
-        headers: {
-          Accept: 'application/x-ndjson',
-          ...headers,
-        },
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      if (!response.body) {
-        throw new Error('Response body is null');
-      }
-
-      if (mountedRef.current) {
-        setStatus('open');
-        onOpen?.();
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split('\n');
-        // Keep the last potentially incomplete line in the buffer
-        buffer = lines.pop() ?? '';
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed) continue;
-
-          try {
-            const event = JSON.parse(trimmed) as AgentEvent;
-            if (mountedRef.current) {
-              dispatch(event);
-            }
-          } catch {
-            // Skip malformed lines
-          }
-        }
-      }
-
-      // Stream ended normally
-      if (mountedRef.current) {
-        setStatus('closed');
-        onClose?.();
-      }
-    } catch (err) {
-      if (controller.signal.aborted) return;
-
-      const streamError = err instanceof Error ? err : new Error(String(err));
-      if (mountedRef.current) {
-        setStatus('error');
-        setError(streamError);
-        onError?.(streamError);
-      }
-    }
-  }, [url, headers, cleanup, dispatch, onOpen, onClose, onError]);
+    await connectStream(url, controller, dispatch, refs, setStatus, setError);
+  }, [url, cleanup, dispatch, refs]);
 
   const scheduleReconnect = useCallback(() => {
-    if (!shouldReconnect || !mountedRef.current) return;
-
+    if (!shouldReconnect || !refs.mounted.current) return;
     setReconnectCount((prev) => {
       if (prev >= maxReconnects) return prev;
-
-      reconnectTimerRef.current = setTimeout(() => {
-        if (mountedRef.current) {
-          connect();
-        }
+      timerRef.current = setTimeout(() => {
+        if (refs.mounted.current) connect();
       }, reconnectInterval);
-
       return prev + 1;
     });
-  }, [shouldReconnect, maxReconnects, reconnectInterval, connect]);
+  }, [shouldReconnect, maxReconnects, reconnectInterval, connect, refs]);
 
-  // Auto-reconnect on error/close
   useEffect(() => {
-    if (status === 'error' && reconnectCount < maxReconnects) {
-      scheduleReconnect();
-    }
+    if (status === 'error' && reconnectCount < maxReconnects) scheduleReconnect();
   }, [status, reconnectCount, maxReconnects, scheduleReconnect]);
-
-  // Connect/disconnect based on enabled
   useEffect(() => {
     if (enabled) {
       setReconnectCount(0);
@@ -184,35 +173,61 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
       cleanup();
       setStatus('closed');
     }
-
     return cleanup;
   }, [enabled, url]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Mounted tracking
   useEffect(() => {
-    mountedRef.current = true;
+    refs.mounted.current = true;
     return () => {
-      mountedRef.current = false;
+      refs.mounted.current = false;
       cleanup();
     };
-  }, [cleanup]);
-
-  const disconnect = useCallback(() => {
-    cleanup();
-    setStatus('closed');
-  }, [cleanup]);
-
-  const manualReconnect = useCallback(() => {
-    setReconnectCount(0);
-    connect();
-  }, [connect]);
+  }, [cleanup, refs]);
 
   return {
-    props,
-    status,
-    error,
-    reconnectCount,
-    disconnect,
-    reconnect: manualReconnect,
+    status, error, reconnectCount,
+    disconnect: useCallback(() => {
+      cleanup();
+      setStatus('closed');
+    }, [cleanup]),
+    reconnect: useCallback(() => {
+      setReconnectCount(0);
+      connect();
+    }, [connect]),
   };
+}
+
+export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamReturn {
+  const {
+    url, headers, enabled = true,
+    reconnect: shouldReconnect = true,
+    reconnectInterval = 3000, maxReconnects = 5,
+    onApprove, onReject, showElapsedTime, showToolCalls,
+    onError, onOpen, onClose,
+  } = options;
+
+  const { dispatch, props } = useAgentSteps({ onApprove, onReject, showElapsedTime, showToolCalls });
+
+  const mountedRef = useRef(true);
+  const headersRef = useRef(headers);
+  const onOpenRef = useRef(onOpen);
+  const onCloseRef = useRef(onClose);
+  const onErrorRef = useRef(onError);
+  useLayoutEffect(() => {
+    headersRef.current = headers;
+    onOpenRef.current = onOpen;
+    onCloseRef.current = onClose;
+    onErrorRef.current = onError;
+  });
+
+  const refs = useRef<StreamRefs>({
+    mounted: mountedRef, headers: headersRef,
+    onOpen: onOpenRef, onClose: onCloseRef, onError: onErrorRef,
+  }).current;
+
+  const stream = useStreamConnection({
+    url, enabled, shouldReconnect, reconnectInterval, maxReconnects, dispatch, refs,
+  });
+
+  return { props, ...stream };
 }
