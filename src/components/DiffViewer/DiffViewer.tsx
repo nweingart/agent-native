@@ -25,8 +25,6 @@ export interface DiffViewerProps {
   showLineNumbers?: boolean;
   /** Show file header with path and status badge. Default: true. */
   showHeader?: boolean;
-  /** Hunk indices to auto-expand (for collapsing large diffs). */
-  expandedHunks?: string[];
   /** Optional max height for scroll container. */
   maxHeight?: number | string;
   /** Callback when a line is clicked. */
