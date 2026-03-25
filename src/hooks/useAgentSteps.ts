@@ -57,88 +57,101 @@ function updateToolCall(toolCalls: ToolCall[], toolCallId: string, updater: (tc:
   return toolCalls.map((tc) => (tc.id === toolCallId ? updater(tc) : tc));
 }
 
+function handleStepStarted(state: AgentStepsState, event: Extract<AgentEvent, { type: 'step.started' }>): AgentStepsState {
+  const newStep: AgentStep = { status: 'running', startedAt: Date.now(), ...event.step };
+  return { ...state, steps: [...state.steps, newStep] };
+}
+
+function handleStepUpdated(state: AgentStepsState, event: Extract<AgentEvent, { type: 'step.updated' }>): AgentStepsState {
+  return {
+    ...state,
+    steps: updateStep(state.steps, event.stepId, (s) => ({
+      ...s,
+      ...pickAllowed<AgentStep>(event.fields, STEP_UPDATABLE_FIELDS),
+    })),
+  };
+}
+
+function handleStepCompleted(state: AgentStepsState, event: Extract<AgentEvent, { type: 'step.completed' }>): AgentStepsState {
+  return {
+    ...state,
+    steps: updateStep(state.steps, event.stepId, (s) => ({
+      ...s,
+      status: event.status ?? 'complete',
+      completedAt: Date.now(),
+      ...(event.error != null ? { error: event.error } : {}),
+    })),
+  };
+}
+
+function handleToolStarted(state: AgentStepsState, event: Extract<AgentEvent, { type: 'tool.started' }>): AgentStepsState {
+  return {
+    ...state,
+    steps: updateStep(state.steps, event.stepId, (s) => ({
+      ...s,
+      toolCalls: [
+        ...(s.toolCalls ?? []),
+        { status: 'running' as const, startedAt: Date.now(), ...event.toolCall },
+      ],
+    })),
+  };
+}
+
+function handleToolUpdated(state: AgentStepsState, event: Extract<AgentEvent, { type: 'tool.updated' }>): AgentStepsState {
+  return {
+    ...state,
+    steps: updateStep(state.steps, event.stepId, (s) => ({
+      ...s,
+      toolCalls: s.toolCalls
+        ? updateToolCall(s.toolCalls, event.toolCallId, (tc) => ({
+            ...tc,
+            ...pickAllowed<ToolCall>(event.fields, TOOL_UPDATABLE_FIELDS),
+          }))
+        : s.toolCalls,
+    })),
+  };
+}
+
+function handleToolCompleted(state: AgentStepsState, event: Extract<AgentEvent, { type: 'tool.completed' }>): AgentStepsState {
+  return {
+    ...state,
+    steps: updateStep(state.steps, event.stepId, (s) => ({
+      ...s,
+      toolCalls: s.toolCalls
+        ? updateToolCall(s.toolCalls, event.toolCallId, (tc) => ({
+            ...tc,
+            status: event.error != null ? 'error' as const : 'complete' as const,
+            completedAt: Date.now(),
+            ...(event.output != null ? { output: event.output } : {}),
+            ...(event.error != null ? { error: event.error } : {}),
+          }))
+        : s.toolCalls,
+    })),
+  };
+}
+
+function handleArtifactAdded(state: AgentStepsState, event: Extract<AgentEvent, { type: 'artifact.added' }>): AgentStepsState {
+  return {
+    ...state,
+    steps: updateStep(state.steps, event.stepId, (s) => ({
+      ...s,
+      artifacts: [...(s.artifacts ?? []), event.artifact],
+    })),
+  };
+}
+
 function reducer(state: AgentStepsState, event: AgentEvent): AgentStepsState {
   switch (event.type) {
-    case 'step.started': {
-      const newStep: AgentStep = {
-        status: 'running',
-        startedAt: Date.now(),
-        ...event.step,
-      };
-      return { ...state, steps: [...state.steps, newStep] };
-    }
-
-    case 'step.updated':
-      return {
-        ...state,
-        steps: updateStep(state.steps, event.stepId, (s) => ({
-          ...s,
-          ...pickAllowed<AgentStep>(event.fields, STEP_UPDATABLE_FIELDS),
-        })),
-      };
-
-    case 'step.completed':
-      return {
-        ...state,
-        steps: updateStep(state.steps, event.stepId, (s) => ({
-          ...s,
-          status: event.status ?? 'complete',
-          completedAt: Date.now(),
-          ...(event.error != null ? { error: event.error } : {}),
-        })),
-      };
-
-    case 'tool.started':
-      return {
-        ...state,
-        steps: updateStep(state.steps, event.stepId, (s) => ({
-          ...s,
-          toolCalls: [
-            ...(s.toolCalls ?? []),
-            { status: 'running' as const, startedAt: Date.now(), ...event.toolCall },
-          ],
-        })),
-      };
-
-    case 'tool.updated':
-      return {
-        ...state,
-        steps: updateStep(state.steps, event.stepId, (s) => ({
-          ...s,
-          toolCalls: s.toolCalls
-            ? updateToolCall(s.toolCalls, event.toolCallId, (tc) => ({
-                ...tc,
-                ...pickAllowed<ToolCall>(event.fields, TOOL_UPDATABLE_FIELDS),
-              }))
-            : s.toolCalls,
-        })),
-      };
-
-    case 'tool.completed':
-      return {
-        ...state,
-        steps: updateStep(state.steps, event.stepId, (s) => ({
-          ...s,
-          toolCalls: s.toolCalls
-            ? updateToolCall(s.toolCalls, event.toolCallId, (tc) => ({
-                ...tc,
-                status: event.error != null ? 'error' as const : 'complete' as const,
-                completedAt: Date.now(),
-                ...(event.output != null ? { output: event.output } : {}),
-                ...(event.error != null ? { error: event.error } : {}),
-              }))
-            : s.toolCalls,
-        })),
-      };
-
+    case 'step.started': return handleStepStarted(state, event);
+    case 'step.updated': return handleStepUpdated(state, event);
+    case 'step.completed': return handleStepCompleted(state, event);
+    case 'tool.started': return handleToolStarted(state, event);
+    case 'tool.updated': return handleToolUpdated(state, event);
+    case 'tool.completed': return handleToolCompleted(state, event);
     case 'tier.started': {
-      const newTier: StepTier = {
-        startedAt: Date.now(),
-        ...event.tier,
-      };
+      const newTier: StepTier = { startedAt: Date.now(), ...event.tier };
       return { ...state, tiers: [...state.tiers, newTier] };
     }
-
     case 'tier.completed':
       return {
         ...state,
@@ -146,31 +159,17 @@ function reducer(state: AgentStepsState, event: AgentEvent): AgentStepsState {
           t.id === event.tierId ? { ...t, completedAt: Date.now() } : t,
         ),
       };
-
     case 'approval.requested':
       return { ...state, approvalRequest: event.request };
-
     case 'approval.resolved':
       return {
         ...state,
         approvalRequest:
           state.approvalRequest?.id === event.requestId ? undefined : state.approvalRequest,
       };
-
-    case 'artifact.added':
-      return {
-        ...state,
-        steps: updateStep(state.steps, event.stepId, (s) => ({
-          ...s,
-          artifacts: [...(s.artifacts ?? []), event.artifact],
-        })),
-      };
-
-    case 'reset':
-      return INITIAL_STATE;
-
-    default:
-      return state;
+    case 'artifact.added': return handleArtifactAdded(state, event);
+    case 'reset': return INITIAL_STATE;
+    default: return state;
   }
 }
 
